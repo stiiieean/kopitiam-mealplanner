@@ -1,0 +1,162 @@
+[
+  {
+    "name": "Sarah Chen",
+    "email": "sarah.chen@email.com",
+    "phone": "+65-9123-4567",
+    "preferences": {
+      "sugarLevel": "50%",
+      "iceLevel": "normal",
+      "favoriteCategories": ["classic", "milk"]
+    }
+  },
+  {
+    "name": "Michael Johnson",
+    "email": "michael.j@email.com",
+    "phone": "+65-9234-5678",
+    "preferences": {
+      "sugarLevel": "75%",
+      "iceLevel": "more ice",
+      "favoriteCategories": ["fruit", "special"]
+    }
+  },
+  {
+    "name": "Emily Liu",
+    "email": "emily.liu@email.com",
+    "phone": "+65-9345-6789",
+    "preferences": {
+      "sugarLevel": "25%",
+      "iceLevel": "less ice",
+      "favoriteCategories": ["classic", "fruit"]
+    }
+  },
+  {
+    "name": "David Wong",
+    "email": "david.wong@email.com",
+    "phone": "+65-9456-7890",
+    "preferences": {
+      "sugarLevel": "100%",
+      "iceLevel": "normal",
+      "favoriteCategories": ["milk", "special"]
+    }
+  },
+  {
+    "name": "Jessica Tan",
+    "email": "jessica.tan@email.com",
+    "phone": "+65-9567-8901",
+    "preferences": {
+      "sugarLevel": "0%",
+      "iceLevel": "no ice",
+      "favoriteCategories": ["classic"]
+    }
+  },
+  {
+    "name": "Robert Smith",
+    "email": "robert.smith@email.com",
+    "phone": "+65-9678-9012",
+    "preferences": {
+      "sugarLevel": "50%",
+      "iceLevel": "normal",
+      "favoriteCategories": ["fruit", "milk"]
+    }
+  },
+  {
+    "name": "Amanda Garcia",
+    "email": "amanda.garcia@email.com",
+    "phone": "+65-9789-0123",
+    "preferences": {
+      "sugarLevel": "75%",
+      "iceLevel": "more ice",
+      "favoriteCategories": ["special"]
+    }
+  },
+  {
+    "name": "James Kim",
+    "email": "james.kim@email.com",
+    "phone": "+65-9890-1234",
+    "preferences": {
+      "sugarLevel": "25%",
+      "iceLevel": "less ice",
+      "favoriteCategories": ["classic", "milk"]
+    }
+  },
+  {
+    "name": "Lisa Rodriguez",
+    "email": "lisa.rodriguez@email.com",
+    "phone": "+65-9901-2345",
+    "preferences": {
+      "sugarLevel": "50%",
+      "iceLevel": "normal",
+      "favoriteCategories": ["fruit", "special"]
+    }
+  },
+  {
+    "name": "Christopher Lee",
+    "email": "christopher.lee@email.com",
+    "phone": "+65-8123-4567",
+    "preferences": {
+      "sugarLevel": "100%",
+      "iceLevel": "more ice",
+      "favoriteCategories": ["milk"]
+    }
+  },
+  {
+    "name": "Sophie Martinez",
+    "email": "sophie.martinez@email.com",
+    "phone": "+65-8234-5678",
+    "preferences": {
+      "sugarLevel": "0%",
+      "iceLevel": "less ice",
+      "favoriteCategories": ["classic", "fruit"]
+    }
+  },
+  {
+    "name": "Daniel Park",
+    "email": "daniel.park@email.com",
+    "phone": "+65-8345-6789",
+    "preferences": {
+      "sugarLevel": "50%",
+      "iceLevel": "normal",
+      "favoriteCategories": ["special", "milk"]
+    }
+  },
+  {
+    "name": "Olivia Anderson",
+    "email": "olivia.anderson@email.com",
+    "phone": "+65-8456-7890",
+    "preferences": {
+      "sugarLevel": "75%",
+      "iceLevel": "more ice",
+      "favoriteCategories": ["classic", "special"]
+    }
+  },
+  {
+    "name": "Kevin Zhang",
+    "email": "kevin.zhang@email.com",
+    "phone": "+65-8567-8901",
+    "preferences": {
+      "sugarLevel": "25%",
+      "iceLevel": "normal",
+      "favoriteCategories": ["fruit", "milk"]
+    }
+  },
+  {
+    "name": "Victoria Brown",
+    "email": "victoria.brown@email.com",
+    "phone": "+65-8678-9012",
+    "preferences": {
+      "sugarLevel": "100%",
+      "iceLevel": "no ice",
+      "favoriteCategories": ["special"]
+    }
+  },
+  {
+    "name": "Nathan Thompson",
+    "email": "nathan.thompson@email.com",
+    "phone": "+65-8789-0123",
+    "preferences": {
+      "sugarLevel": "50%",
+      "iceLevel": "less ice",
+      "favoriteCategories": ["classic", "fruit", "milk"]
+    }
+  }
+]

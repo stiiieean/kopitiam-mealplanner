@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error - Bubbly Bliss</title>
+
+</head>
+<body>
+    <nav>
+      <a href="/">🧋 Bubbly Bliss</a>
+      <ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/account">Account</a></li>
+        <li><a href="/menu">Menu</a></li>
+        <li><a href="/reviews">Reviews</a></li>
+      </ul>
+    </nav>
+  
+    <h1>Oops! Something went wrong</h1>
+    <p>We encountered an error while processing your request. Please try again later.</p>
+    
+    <% if(error) { %>
+    <div class="error-details">
+        <strong>Error Details:</strong><br>
+        <%= error %>
+    </div>
+    <% } %>
+
+    <a href="/">← Back Home</a>
+
+  <footer>
+    <p>&copy; 2026 Bubbly Bliss. All rights reserved.</p>
+  </footer>
+</body>
+</html>

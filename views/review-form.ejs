@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review</title>
+</head>
+<body>
+    <nav>
+    <a href="/">🧋 Bubbly Bliss</a>
+        <ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/account">Account</a></li>
+        <li><a href="/menu">Menu</a></li>
+        <li><a href="/reviews">Reviews</a></li>
+        </ul>
+    </nav>
+   <img src="./images/tea.jpeg" alt="">
+
+    <form action="/reviews/create" method="post">
+        <input type="hidden" name="orderId" value="<%= orderId %>">
+        <input type="hidden" name="customerId" value="<%= customerId %>">
+         <input type="hidden" name="name" value="<%= name %>">
+
+        Rating: <input type="number" name="rating" min="1" max="5">
+
+        Comment: <textarea name="comment" rows="4" cols="40"></textarea>
+
+        <button type="submit">Rate</button>
+
+    </form>
+</body>
+</html>
