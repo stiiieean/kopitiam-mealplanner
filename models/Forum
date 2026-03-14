@@ -1,0 +1,43 @@
+const mongoose = require('mongoose');
+
+const forumSchema = new mongoose.Schema({
+  title:   { type: String, required: true },
+  content: { type: String, required: true },
+  userId:  { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdAt: { type: Date, default: Date.now },
+  likes: { type: Number, default: 0 }
+});
+
+const Forum = mongoose.model('Forum', forumSchema);
+
+// CRUD operations
+exports.createPost = function(data) {
+  return Forum.create(data);
+};
+
+exports.getAllPosts = function() {
+  return Forum.find()
+    .populate('userId', 'username')
+    .sort({ createdAt: -1 });
+};
+
+exports.getPostById = function(id) {
+  return Forum.findById(id)
+    .populate('userId', 'username');
+};
+
+exports.updatePost = function(id, data) {
+  return Forum.findByIdAndUpdate(id, data, { new: true });
+};
+
+exports.deletePost = function(id) {
+  return Forum.findByIdAndDelete(id);
+};
+
+exports.addOneLike = function(id) {
+  return Forum.findByIdAndUpdate(
+    id,
+    { $inc: { likes: 1 } },
+    { new: true }
+  );
+};
