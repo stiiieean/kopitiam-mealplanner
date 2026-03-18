@@ -1,141 +1,79 @@
-const Review = require('./../models/Review');
-const Tea = require('./../models/Tea');
+const Review = require('../models/Review');
+const Store = require('../models/Store');
 
-exports.showReviewForm = async (req, res) => {
-    try {
-        //const teas = await Tea.retrieveAll();
-        let orderId = req.query.orderId || '';
-        let customerId = req.query.customerId || '';
-        let name = req.query.name != ''? req.query.name : 'Anonymous';
+// GET /ratings/:storeId/review/new
+exports.getNewReview = async (req, res) => {
+  const storeId = req.params.storeId;
 
-        res.render('review-form', {  orderId, customerId, name } )
+  try {
+    const store = await Store.retrieveById(storeId);
+
+    if (!store) {
+      return res.status(404).send('Store not found');
+    }
+
+    res.render('add-review', {
+      storeId: store._id,
+      storeName: store.name,
+      error: '',
+    });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.send('Error loading review form');
   }
 };
 
-exports.getReviewsPage = async (req, res) => {
-  try {
-    // const teas = await Tea.retrieveAll();
+// POST /ratings/:storeId/review/new
+exports.postNewReview = async (req, res) => {
+  const storeId = req.params.storeId;
+  const title = req.body.title;
+  const body = req.body.body;
+  const rating = Number(req.body.rating);
 
-    const reviews = await Review.retrieveAll();
-    //console.log(Array.isArray(reviews))
-    // console.log(`Reviews ---- ${reviews}`);
-    res.render('reviews', { reviews });
-    //res.send('hello');
+  // TODO: replace with req.session.user._id once session is set up
+  // const userId = req.session.user._id;
 
-    // const reviews = await Review.find()
-    //   .populate('tea')
-    //   .populate('customer')
-    //   .sort({ createdAt: -1 });
-
-    // Group reviews by tea
-    // const reviewsByTea = {};
-    // teas.forEach(tea => {
-    //   reviewsByTea[tea._id] = {
-    //     tea: tea,
-    //     reviews: reviews.filter(r => r.tea._id.toString() === tea._id.toString()),
-    //     averageRating: 0
-    //   };
-    // });
-
-    // Calculate average ratings
-    // for (const teaId in reviewsByTea) {
-    //   const teaReviews = reviewsByTea[teaId].reviews;
-    //   if (teaReviews.length > 0) {
-    //     const totalRating = teaReviews.reduce((sum, r) => sum + r.rating, 0);
-    //     reviewsByTea[teaId].averageRating = (totalRating / teaReviews.length).toFixed(1);
-    //   }
-    // }
-
-    // res.render('reviews', { reviewsByTea, teas });
-  } catch (error) {
-    res.status(500).render('error', { error: error.message });
+  // Server-side validation
+  let error = '';
+  if (!title || title.trim() === '') {
+    error = 'Title is required.';
+  } else if (!body || body.trim().length < 10) {
+    error = 'Review must be at least 10 characters.';
+  } else if (!rating || rating < 1 || rating > 5) {
+    error = 'Rating must be between 1 and 5.';
   }
-};
 
-exports.createReview = async (req, res) => {
+  if (error) {
+    return res.render('add-review', {
+      storeId,
+      storeName: req.body.storeName,
+      error,
+    });
+  }
+
   try {
-
-    const customerId = req.body.customerId;
-    const name = req.body.name;
-    const orderId = req.body.orderId;
-    const comment = req.body.comment;
-    const rating = req.body.rating
-
-    const review = {
-      customer: customerId,
-      name: name,
-      order: orderId,
+    const newReview = new Review({
+      storeId: storeId,
+      title: title.trim(),
+      body: body.trim(),
       rating: rating,
-      comment: comment
-    };
+      timestamp: Date.now(),
+    });
 
-    // console.log(review)
+    const savedReview = await newReview.save();
+    console.log('Review saved:', savedReview);
 
-    let newReview = await Review.createReview(review);
-    // res.json({ success: true, newReview });
-    res.redirect('/reviews')
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    // Link the review to the store
+    const store = await Store.retrieveById(storeId);
+    store.reviews.push(savedReview._id);
+    await store.save();
+    console.log('Review linked to store:', store.name);
+
+    res.redirect('/ratings/' + storeId);
+
+  } catch (err) {
+    console.error(err);
+    res.send('Error saving review');
   }
 };
-
-// exports.getReviewsByTea = async (req, res) => {
-//   try {
-//     const teaId = req.params.teaId;
-//     const tea = await Tea.findById(teaId);
-//     const reviews = await Review.find({ tea: teaId })
-//       .populate('customer')
-//       .sort({ createdAt: -1 });
-
-//     const averageRating = reviews.length > 0
-//       ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
-//       : 0;
-
-//     res.json({ tea, reviews, averageRating, totalReviews: reviews.length });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-// exports.getTeaStats = async (req, res) => {
-//   try {
-//     const teaId = req.params.teaId;
-//     const reviews = await Review.find({ tea: teaId });
-
-//     const stats = {
-//       totalReviews: reviews.length,
-//       averageRating: 0,
-//       averageFlavor: 0,
-//       averageTexture: 0,
-//       averageSweetness: 0,
-//       averageValue: 0,
-//       ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
-//     };
-
-//     if (reviews.length > 0) {
-//       let flavorSum = 0, textureSum = 0, sweetnessSum = 0, valueSum = 0, ratingSum = 0;
-
-//       reviews.forEach(review => {
-//         ratingSum += review.rating;
-//         stats.ratingDistribution[review.rating]++;
-
-//         if (review.flavor) flavorSum += review.flavor;
-//         if (review.texture) textureSum += review.texture;
-//         if (review.sweetness) sweetnessSum += review.sweetness;
-//         if (review.value) valueSum += review.value;
-//       });
-
-//       stats.averageRating = (ratingSum / reviews.length).toFixed(1);
-//       stats.averageFlavor = reviews.some(r => r.flavor) ? (flavorSum / reviews.length).toFixed(1) : 0;
-//       stats.averageTexture = reviews.some(r => r.texture) ? (textureSum / reviews.length).toFixed(1) : 0;
-//       stats.averageSweetness = reviews.some(r => r.sweetness) ? (sweetnessSum / reviews.length).toFixed(1) : 0;
-//       stats.averageValue = reviews.some(r => r.value) ? (valueSum / reviews.length).toFixed(1) : 0;
-//     }
-
-//     res.json(stats);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add Review — <%= storeName %></title>
+</head>
+<body>
+
+  <a href="/ratings/<%= storeId %>">← Back to <%= storeName %></a>
+
+  <h1>Add Review for <%= storeName %></h1>
+
+  <% if (error) { %>
+    <p style="color: red;"><%= error %></p>
+  <% } %>
+
+  <form action="/ratings/<%= storeId %>/review/new" method="POST">
+
+    <input type="hidden" name="storeName" value="<%= storeName %>">
+
+    <div>
+      <label for="title">Title:</label><br>
+      <input type="text" id="title" name="title" maxlength="100" required>
+    </div>
+
+    <br>
+
+    <div>
+      <label for="body">Review:</label><br>
+      <textarea id="body" name="body" rows="5" cols="40" minlength="10" required></textarea>
+    </div>
+
+    <br>
+
+    <div>
+      <label for="rating">Rating (1-5):</label><br>
+      <select id="rating" name="rating" required>
+        <option value="">-- Select --</option>
+        <option value="1">1 - Poor</option>
+        <option value="2">2 - Fair</option>
+        <option value="3">3 - Average</option>
+        <option value="4">4 - Good</option>
+        <option value="5">5 - Excellent</option>
+      </select>
+    </div>
+
+    <br>
+
+    <button type="submit">Submit Review</button>
+
+  </form>
+
+</body>
+</html>
