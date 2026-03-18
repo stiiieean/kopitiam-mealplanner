@@ -1,42 +1,14 @@
 const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema({
-  customer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Customer',
-    required: true
-  },
-  name: {
-    type: String,
-    default: 'Guest',
-    required: true
-  },
-  order: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Order'
-  },
-  rating: {
-    type: Number,
-    min: 1,
-    max: 5,
-    required: true
-  },
-  comment: {
-    type: String,
-    default: ''
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  userid:    { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // TODO: add required back once session is set up
+  storeId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: [true, 'A review must belong to a store'] },
+  title:     { type: String, required: [true, 'A review must have a title'], maxlength: 100 },
+  body:      { type: String, required: [true, 'A review must have a body'], minlength: 10 },
+  rating:    { type: Number, required: [true, 'A review must have a rating'], min: 1, max: 5 },
+  timestamp: { type: Date, default: Date.now },
 });
 
-const Review = mongoose.model('Review', reviewSchema, 'Review');
+const Review = mongoose.model('Review', reviewSchema, 'reviews');
 
-exports.retrieveAll = function() {
-  return Review.find();
-};
-
-exports.createReview = function(newReview) {
-  return Review.create(newReview);
-};
+module.exports = Review;
