@@ -22,6 +22,7 @@ server.use(express.json());
 server.use('/menu', require('./routes/menu'));
 server.use('/order', require('./routes/order'));
 server.use('/reviews', require('./routes/reviews'));
+server.use('/forum', require('./routes/forum'));
 
 
 // Error handling middleware
