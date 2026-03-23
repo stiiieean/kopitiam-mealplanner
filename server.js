@@ -23,6 +23,8 @@ server.use('/menu', require('./routes/menu'));
 server.use('/order', require('./routes/order'));
 server.use('/reviews', require('./routes/reviews'));
 
+server.use("/",require("./routes/user-routes"))
+
 
 // Error handling middleware
 // server.use((err, req, res, next) => {
