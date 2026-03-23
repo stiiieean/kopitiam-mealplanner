@@ -20,6 +20,10 @@
     <br><br>
     <button type="submit">Register</button>
   </form>
+  <% if ( failure){ %>
+      <p style="color: red;"><%= failure %></p>
+    <% } %>
+    <br>
   <a href="/login">Already have an account? Login</a>
 </body>
 
