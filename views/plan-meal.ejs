@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan Meal</title>
+</head>
+<body>
+    <nav>
+        <a href="/meal-planner">Back to Calendar</a>
+    </nav>
+
+    <h1><%= existingPlan ? 'Edit' : 'Plan' %> Meal for <%= date %></h1>
+
+    <form action="/meal-planner/<%= date %>" method="POST">
+        <p>
+            <label><strong>Meal Name:</strong></label><br>
+            <input type="text" name="mealName" required value="<%= existingPlan ? existingPlan.mealName : '' %>">
+        </p>
+
+        <p>
+            <label><strong>Kopitiam Store:</strong></label><br>
+            <select name="storeName">
+                <option value="">-- Select a Store --</option>
+                <% stores.forEach(store => { %>
+                    <option value="<%= store.name %>" 
+                        <%= existingPlan && existingPlan.storeName === store.name ? 'selected' : '' %>>
+                        <%= store.name %>
+                    </option>
+                <% }) %>
+            </select>
+        </p>
+
+        <p>
+            <label><strong>Budget ($):</strong></label><br>
+            <input type="number" name="budget" step="0.01" min="0" value="<%= existingPlan && existingPlan.budget ? existingPlan.budget : '' %>">
+        </p>
+
+        <p>
+            <label><strong>Notes:</strong></label><br>
+            <textarea name="notes" rows="4" cols="40"><%= existingPlan && existingPlan.notes ? existingPlan.notes : '' %></textarea>
+        </p>
+
+        <button type="submit">Save</button>
+    </form>
+
+    <% if(existingPlan) { %>
+        <hr>
+        <form action="/meal-planner/<%= date %>/delete" method="POST">
+            <button type="submit" style="color: red;">Clear This Day</button>
+        </form>
+    <% } %>
+</body>
+</html>
