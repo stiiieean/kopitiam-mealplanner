@@ -2,50 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customer Reviews - Bubbly Bliss</title>
-  
+  <title>Reviews for <%= store.name %></title>
 </head>
 <body>
-  <nav>
-    <a href="/">🧋 Bubbly Bliss</a>
-    <ul>
-      <li><a href="/about">About</a></li>
-      <li><a href="/account">Account</a></li>
-      <li><a href="/menu">Menu</a></li>
-      <li><a href="/reviews">Reviews</a></li>
-    </ul>
-  </nav>
+  <h2>Reviews</h2>
 
- 
-  <h1>⭐ Customer Reviews</h1>
-  <p>See what our customers think about our bubble teas</p>
+  <% if (store.reviews && store.reviews.length > 0) { %>
+    <% store.reviews.forEach(review => { %>
+      <div>
+        <h3><%= review.title %> — <%= review.rating %> ★</h3>
+        <p><%= review.body %></p>
+        <small>
+          By <%= review.userid ? review.userid.username : 'Anonymous' %> 
+          on <%= new Date(review.timestamp).toLocaleDateString() %>
+        </small>
+        <br>
 
-  <% if(reviews && reviews.length > 0) { %>
-   
-          <% reviews.forEach(review => { %>
-              <p><%= review.name %></p>
-              <p><%= new Date(review.createdAt).toLocaleDateString() %></p>
-              <p><%= Array(review.rating).fill('⭐').join('') %></p>
-              <p><%= review.comment || 'No comment provided' %></p>
-              <hr> 
-          <% }); %>
-           
-        <hr>
-      
+        <a href="/review/<%= review._id %>/edit">Edit</a>
+
+        <form action="/review/<%= review._id %>/delete" method="POST" style="display:inline;">
+          <button type="submit">Delete</button>
+        </form>
+      </div>
+      <hr>
+    <% }) %>
   <% } else { %>
-    
- 
-    <p>📝 No reviews available yet. Start ordering and sharing your experiences!</p>
-    <a href="/menu">Order Now</a>
-    
+    <p>No reviews yet. Be the first to add one!</p>
   <% } %>
- 
 
-  <footer>
-    <p>&copy; 2026 Bubbly Bliss. All rights reserved.</p>
-  </footer>
-
-
+  <a href="/ratings/<%= store._id %>/review/new">Add Review</a>
 </body>
 </html>

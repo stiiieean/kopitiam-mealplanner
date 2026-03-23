@@ -9,6 +9,8 @@ const server = express();
 // Specify the path to the environment variablef file 'config.env'
 dotenv.config({ path: './config.env' });
 
+require('./models/Review');
+
 // Set view engine
 server.set('view engine', 'ejs');
 // server.set('views', path.join(__dirname, 'views'));

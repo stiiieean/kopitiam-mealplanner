@@ -1,19 +1,25 @@
 const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema({
-  customer: {
+  userid: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Customer',
+    ref: 'User',
     required: true
   },
-  name: {
+  storeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Store',
+    required: true
+  },
+  title: {
     type: String,
-    default: 'Guest',
-    required: true
+    required: true,
+    maxlength: 100
   },
-  order: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Order'
+  body: {
+    type: String,
+    required: true,
+    minlength: 10
   },
   rating: {
     type: Number,
@@ -21,22 +27,18 @@ const reviewSchema = new mongoose.Schema({
     max: 5,
     required: true
   },
-  comment: {
-    type: String,
-    default: ''
-  },
-  createdAt: {
+  timestamp: {
     type: Date,
     default: Date.now
   }
 });
 
-const Review = mongoose.model('Review', reviewSchema, 'Review');
-
-exports.retrieveAll = function() {
-  return Review.find();
+reviewSchema.statics.retrieveAll = function(){
+  return this.find();
 };
 
-exports.createReview = function(newReview) {
-  return Review.create(newReview);
+reviewSchema.statics.createReview = function(reviewData){
+  return this.create(reviewData);
 };
+
+module.exports = mongoose.model('Review', reviewSchema);
