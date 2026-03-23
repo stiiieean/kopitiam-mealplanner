@@ -2,15 +2,12 @@ const express = require('express');
 const router = express.Router();
 const ReviewController = require('./../controllers/ReviewController');
 
-router.get('/', ReviewController.getReviewsPage);
+router.get('/ratings/:storeId/review/new', ReviewController.getNewReview);
+router.post('/ratings/:storeId/review/new', ReviewController.postNewReview);
 
-// router.get('/tea/:teaId', ReviewController.getReviewsByTea);
+router.get('/review/:reviewId/edit', ReviewController.getEditReview);
+router.post('/review/:reviewId/edit', ReviewController.postEditReview);
 
-// router.get('/stats/:teaId', ReviewController.getTeaStats);
-
-router.post('/create', ReviewController.createReview);
-
-router.get('/create', ReviewController.showReviewForm);
-
+router.post('/review/:reviewId/delete', ReviewController.deleteReview);
 
 module.exports = router;
