@@ -1,1 +1,40 @@
-<h1>Hello World</h1>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Forums</title>
+</head>
+<body>
+
+  <h1>Forum Posts</h1>
+
+  <a href="/forum/create">Create New Post</a>
+
+  <hr>
+
+  <% posts.forEach(post => { %>
+    <div style="margin-bottom: 20px;">
+      <h2>
+        <a href="/forum/<%= post._id %>">
+          <%= post.title %>
+        </a>
+      </h2>
+
+      <p>
+        By: <%= post.userId?.username || 'Unknown' %>
+      </p>
+
+      <p>
+        Likes: <%= post.likes %>
+        <form action="/forum/like/<%= post._id %>" method="POST" style="display:inline;">
+            <button type="submit">Like</button>
+        </form>
+      </p>
+
+      <a href="/forum/edit/<%= post._id %>">Edit</a>
+
+    </div>
+    <hr>
+  <% }) %>
+
+</body>
+</html>

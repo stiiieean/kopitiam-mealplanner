@@ -1,1 +1,28 @@
-<h1>Hello World</h1>
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= post.title %></title>
+</head>
+<body>
+
+  <h1><%= post.title %></h1>
+
+  <p>
+    By: <%= post.userId?.username || 'Unknown' %>
+  </p>
+
+  <p><%= post.content %></p>
+
+  <p>Likes: <%= post.likes %></p>
+
+  <form action="/forum/like/<%= post._id %>" method="POST">
+    <button type="submit">Like</button>
+  </form>
+
+  <a href="/forum/edit/<%= post._id %>">Edit</a>
+
+  <br><br>
+  <a href="/forum">Back to Forums</a>
+
+</body>
+</html>
