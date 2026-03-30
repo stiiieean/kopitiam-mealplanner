@@ -3,7 +3,9 @@ const User = require('../models/User');
 const bcrypt = require("bcrypt")
 
 exports.home = (req, res) => {
-    res.send("home")
+    res.render('home', {
+        user: req.session.user
+    });
 };
 
 
@@ -64,9 +66,10 @@ exports.postLogin = async (req, res) => {
         let match = await bcrypt.compare(password, user.password);
         if (match){
             req.session.user = {
-                userid : user.userid
-                
-            }
+                _id: user._id,
+                userid: user.userid,
+                username: user.username
+            };
             res.redirect("/home")
         } else{
             res.render("login",{failure:"Invalid credentials"})

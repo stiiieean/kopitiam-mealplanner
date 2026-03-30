@@ -18,7 +18,6 @@ server.set('view engine', 'ejs');
 
 // Middleware
 server.use(express.urlencoded({ extended: true }));
-server.use(express.static(path.join(__dirname, 'public')));
 server.use(express.json());
 
 // Session
@@ -29,14 +28,17 @@ server.use(session({
     saveUninitialized: false // Prevents a new, empty session from being saved to the store.
 }));
 
+server.get('/', (req, res) => {
+  res.redirect('/login');
+});
 
 // Routes
 server.use('/menu', require('./routes/menu'));
 server.use('/order', require('./routes/order'));
 server.use('/reviews', require('./routes/reviews'));
+server.use("/", require("./routes/auth"))
 
-server.use("/",require("./routes/auth"))
-
+server.use(express.static(path.join(__dirname, 'public')));
 
 // Error handling middleware
 // server.use((err, req, res, next) => {
