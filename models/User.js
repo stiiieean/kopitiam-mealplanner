@@ -36,10 +36,4 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', UserSchema);
 
-exports.addUser = function(newUser) {
-  return User.create(newUser);
-};
-
-exports.findUser = function(userid) {
-  return User.findOne({ userid: userid });
-};
+module.exports = User;
