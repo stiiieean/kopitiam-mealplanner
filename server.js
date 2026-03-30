@@ -2,31 +2,29 @@ const express = require('express');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const path = require('path');
-// const fs = require('fs');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 
 const server = express();
 
-// Specify the path to the environment variablef file 'config.env'
-dotenv.config({ path: './config.env' });
+dotenv.config({ path: './config.env' }); // load .env variables
 
-require('./models/Review');
-
-// Set view engine
 server.set('view engine', 'ejs');
-// server.set('views', path.join(__dirname, 'views'));
-
-// Middleware
 server.use(express.urlencoded({ extended: true }));
 server.use(express.json());
 
 // Session
 const secret = process.env.SECRET;
 server.use(session({
-    secret: secret, // sign the session ID cookie. should be a long, random, and secure string, preferably stored in an environment variable
-    resave: false, // Prevents the session from being saved back to the session store if nothing has changed.
-    saveUninitialized: false // Prevents a new, empty session from being saved to the store.
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: process.env.DB }),
+    cookie: { maxAge: 1000 * 60 * 60 * 24 }
 }));
+
+// register model before using populate
+require('./models/Review');
 
 server.get('/', (req, res) => {
   res.redirect('/login');
@@ -40,33 +38,41 @@ server.use("/", require("./routes/auth"))
 
 server.use(express.static(path.join(__dirname, 'public')));
 
-// Error handling middleware
-// server.use((err, req, res, next) => {
-//   console.error(err.stack);
-//   res.status(500).render('error', { error: err.message });
-// });
+// temp mock login for testing bruh - remember delete
+server.use(async (req, res, next) => {
+    if (!req.session.user) {
+        const User = require('./models/User');
+        let testUser = await User.findOne({ userid: 'tester123' });
+        if (!testUser) {
+            testUser = await User.create({
+                userid: 'tester123',
+                username: 'Demo Student',
+                password: 'mockpassword',
+                calendar: {}
+            });
+        }
+        req.session.user = testUser;
+    }
+    next();
+});
 
-// async function to connect to DB
+// routes
+server.use('/meal-planner', require('./routes/mealPlanner'));
+
+// connect to db and start server
 async function connectDB() {
   try {
-    // connecting to Database with our config.env file and DB is constant in config.env
     await mongoose.connect(process.env.DB);
     console.log("MongoDB connected successfully");
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);
     process.exit(1);
   }
-};
-
-function startServer() {
-  const hostname = "localhost"; // Define server hostname
-  const port = process.env.PORT || 8000; // Define port number
- 
-  // Start the server and listen on the specified hostname and port
-  server.listen(port, () => {
-    console.log(`Server running at http://${hostname}:${port}/`);
-  });
 }
 
-// call connectDB first and when connection is ready we start the web server
+function startServer() {
+  const port = process.env.PORT || 8000; 
+  server.listen(port, () => console.log(`Server running at http://localhost:${port}/`));
+}
+
 connectDB().then(startServer);

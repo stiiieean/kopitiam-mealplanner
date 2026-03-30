@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Planner</title>
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a> | 
+        <a href="/meal-planner">Meal Planner</a>
+    </nav>
+
+    <% 
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        // handle prev/next month loops
+        let prevMonth = month - 1;
+        let prevYear = year;
+        if (prevMonth < 0) { prevMonth = 11; prevYear--; }
+        
+        let nextMonth = month + 1;
+        let nextYear = year;
+        if (nextMonth > 11) { nextMonth = 0; nextYear++; }
+    %>
+
+    <h1>Meal Planner: <%= monthNames[month] %> <%= year %></h1>
+    
+    <div>
+        <a href="/meal-planner?month=<%= prevMonth %>&year=<%= prevYear %>">Prev Month</a> | 
+        <a href="/meal-planner?month=<%= nextMonth %>&year=<%= nextYear %>">Next Month</a>
+    </div>
+    
+    <h3>Total Planned Spend This Month: $<%= totalBudget.toFixed(2) %></h3>
+    <hr>
+
+    <table border="1" width="100%" cellpadding="10" style="border-collapse: collapse; text-align: center;">
+        <thead>
+            <tr style="background-color: #f0f0f0;">
+                <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <% 
+                    // pad empty cells before day 1
+                    for(let i = 0; i < firstDay; i++) { 
+                %>
+                    <td></td>
+                <% } %>
+
+                <% 
+                    // loop through days in the month
+                    for(let day = 1; day <= daysInMonth; day++) { 
+                        // format date for map key YYYY-MM-DD
+                        let mFormat = (month + 1).toString().padStart(2, '0');
+                        let dFormat = day.toString().padStart(2, '0');
+                        let dateString = `${year}-${mFormat}-${dFormat}`;
+                        
+                        let meal = calendar.has(dateString) ? calendar.get(dateString) : null;
+                %>
+                    <td style="vertical-align: top; height: 100px; width: 14%;">
+                        <strong><%= day %></strong><br><br>
+                        
+                        <% if(meal) { %>
+                            <span style="color: green; font-weight: bold;"><%= meal.mealName %></span><br>
+                            <small><%= meal.storeName %></small><br>
+                            <small><em>$<%= meal.budget ? meal.budget.toFixed(2) : '0.00' %></em></small><br>
+                        <% } %>
+                        
+                        <br>
+                        <a href="/meal-planner/<%= dateString %>">
+                            <%= meal ? 'Edit' : 'Add Meal' %>
+                        </a>
+                    </td>
+                <% 
+                    // break row on satur
+                    if((day + firstDay) % 7 === 0) { 
+                %>
+                    </tr><tr>
+                <% 
+                    } 
+                } 
+                
+                // pad empty cells at EOM
+                let remainingCells = 7 - ((daysInMonth + firstDay) % 7);
+                if(remainingCells < 7) {
+                    for(let i = 0; i < remainingCells; i++) {
+                %>
+                    <td></td>
+                <% 
+                    }
+                }
+                %>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
