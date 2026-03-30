@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const path = require('path');
 // const fs = require('fs');
+const session = require('express-session');
 
 const server = express();
 
@@ -20,10 +21,21 @@ server.use(express.urlencoded({ extended: true }));
 server.use(express.static(path.join(__dirname, 'public')));
 server.use(express.json());
 
+// Session
+const secret = process.env.SECRET;
+server.use(session({
+    secret: secret, // sign the session ID cookie. should be a long, random, and secure string, preferably stored in an environment variable
+    resave: false, // Prevents the session from being saved back to the session store if nothing has changed.
+    saveUninitialized: false // Prevents a new, empty session from being saved to the store.
+}));
+
+
 // Routes
 server.use('/menu', require('./routes/menu'));
 server.use('/order', require('./routes/order'));
 server.use('/reviews', require('./routes/reviews'));
+
+server.use("/",require("./routes/auth"))
 
 
 // Error handling middleware
