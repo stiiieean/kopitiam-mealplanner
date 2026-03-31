@@ -1,35 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Reviews for <%= store.name %></title>
+  <meta charset="UTF-8" />
+  <title>Reviews — Kopitiam</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #faf9f7;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: #6b3f1f;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 32px;
+    }
+
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .navbar a:hover { text-decoration: underline; }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 24px;
+    }
+
+    .section {
+      background: white;
+      border: 1px solid #e0d9d0;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      color: #3b2008;
+      margin-bottom: 20px;
+    }
+
+    .add-review-btn {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 9px 18px;
+      background: #6b3f1f;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .add-review-btn:hover { background: #3b2008; }
+
+    .review-card {
+      border-top: 1px solid #e0d9d0;
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .review-card:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .review-card h3 {
+      font-size: 1rem;
+      color: #3b2008;
+      margin-bottom: 4px;
+    }
+
+    .review-card .rating {
+      font-size: 0.85rem;
+      color: #6b3f1f;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .review-card p {
+      font-size: 0.9rem;
+      color: #444;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+
+    .review-card .byline {
+      font-size: 0.8rem;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+
+    .review-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .edit-btn {
+      padding: 6px 14px;
+      background: white;
+      color: #6b3f1f;
+      border: 1px solid #e0d9d0;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .edit-btn:hover { background: #f0e9df; }
+
+    .delete-btn {
+      padding: 6px 14px;
+      background: white;
+      color: #c0392b;
+      border: 1px solid #f5c6c2;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover { background: #fdf0ef; }
+
+    .no-result {
+      font-size: 0.9rem;
+      color: #888;
+    }
+  </style>
 </head>
 <body>
-  <h2>Reviews</h2>
 
-  <% if (store.reviews && store.reviews.length > 0) { %>
-    <% store.reviews.forEach(review => { %>
-      <div>
-        <h3><%= review.title %> — <%= review.rating %> ★</h3>
-        <p><%= review.body %></p>
-        <small>
-          By <%= review.userid ? review.userid.username : 'Anonymous' %> 
-          on <%= new Date(review.timestamp).toLocaleDateString() %>
-        </small>
-        <br>
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/ratings/<%= store._id %>">← Back to Store</a>
+  </nav>
 
-        <a href="/review/<%= review._id %>/edit">Edit</a>
+  <div class="container">
+    <div class="section">
+      <h2>Reviews for <%= store.name %></h2>
 
-        <form action="/review/<%= review._id %>/delete" method="POST" style="display:inline;">
-          <button type="submit">Delete</button>
-        </form>
-      </div>
-      <hr>
-    <% }) %>
-  <% } else { %>
-    <p>No reviews yet. Be the first to add one!</p>
-  <% } %>
+      <a href="/ratings/<%= store._id %>/review/new" class="add-review-btn">+ Add Review</a>
 
-  <a href="/ratings/<%= store._id %>/review/new">Add Review</a>
+      <% if (store.reviews && store.reviews.length > 0) { %>
+        <% store.reviews.forEach(review => { %>
+          <div class="review-card">
+            <h3><%= review.title %></h3>
+            <p class="rating">★ <%= review.rating %> / 5</p>
+            <p><%= review.body %></p>
+            <p class="byline">
+              By <%= review.userid ? review.userid.username : 'Anonymous' %> ·
+              <%= new Date(review.timestamp).toLocaleDateString("en-SG", { year: "numeric", month: "short", day: "numeric" }) %>
+            </p>
+            <div class="review-actions">
+              <a href="/review/<%= review._id %>/edit" class="edit-btn">Edit</a>
+              <form action="/review/<%= review._id %>/delete" method="POST">
+                <button type="submit" class="delete-btn">Delete</button>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p class="no-result">No reviews yet. Be the first to add one!</p>
+      <% } %>
+    </div>
+  </div>
+
 </body>
 </html>

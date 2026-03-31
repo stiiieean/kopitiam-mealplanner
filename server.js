@@ -41,6 +41,7 @@ const ratingsRouter = require('./routes/ratings');
 const reviewsRouter = require('./routes/reviews');
 const mealPlannerRouter = require('./routes/mealPlanner');
 const profileRouter = require('./routes/profile');
+const adminRouter = require('./routes/admin');
 
 server.use('/', authRouter);
 server.use('/home', homeRouter);
@@ -48,6 +49,7 @@ server.use('/ratings', ratingsRouter);
 server.use('/', reviewsRouter);
 server.use('/meal-planner', mealPlannerRouter);
 server.use('/profile', profileRouter);
+server.use('/admin', adminRouter);
 
 // Root redirect to login
 server.get('/', (req, res) => res.redirect('/login'));
@@ -55,7 +57,10 @@ server.get('/', (req, res) => res.redirect('/login'));
 // Async function to connect to DB
 async function connectDB() {
   try {
-    await mongoose.connect(process.env.DB);
+    await mongoose.connect(process.env.DB, {
+      tls: true,
+      tlsAllowInvalidCertificates: false,
+    });
     console.log('MongoDB connected successfully');
   } catch (error) {
     console.error('MongoDB connection failed:', error.message);

@@ -55,6 +55,7 @@ exports.postNewReview = async (req, res) => {
   try {
     const newReview = new Review({
       storeId: storeId,
+      userid: req.session.user ? req.session.user._id : null,
       title: title.trim(),
       body: body.trim(),
       rating: rating,
@@ -81,6 +82,11 @@ exports.getEditReview = async (req, res) => {
   try {
     const review = await Review.findById(req.params.reviewId);
     if (!review) return res.send('Review not found');
+
+    const sessionUser = req.session.user;
+    const isOwner = review.userid && review.userid.toString() === sessionUser._id.toString();
+    const isAdmin = sessionUser.role === 'admin';
+    if (!isOwner && !isAdmin) return res.status(403).redirect('/ratings/' + review.storeId);
 
     res.render('edit-review', { review, storeId: review.storeId, error: '' });
   } catch (error) {
@@ -131,6 +137,11 @@ exports.deleteReview = async (req, res) => {
   try {
     const review = await Review.findById(reviewId);
     if (!review) return res.send('Review not found');
+
+    const sessionUser = req.session.user;
+    const isOwner = review.userid && review.userid.toString() === sessionUser._id.toString();
+    const isAdmin = sessionUser.role === 'admin';
+    if (!isOwner && !isAdmin) return res.status(403).redirect('/ratings/' + review.storeId);
 
     const storeId = review.storeId;
 

@@ -18,7 +18,10 @@ exports.retrieveAll = function(filter) {
 
 // Retrieve one store by ID — returns full mongoose document so .save() works
 exports.retrieveById = function(id) {
-  return StoreModel.findById(id).populate('reviews');
+  return StoreModel.findById(id).populate({
+    path: 'reviews',
+    populate: { path: 'userid', select: 'username' }
+  });
 };
 
 // Retrieve all stores without populating (for dropdowns)

@@ -3,35 +3,108 @@
 <head>
   <meta charset="UTF-8" />
   <title>Profile — Kopitiam</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #faf9f7;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: #6b3f1f;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 32px;
+    }
+
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+    .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .navbar a:hover { text-decoration: underline; }
+
+    .container { max-width: 440px; margin: 48px auto; padding: 0 24px; }
+
+    .card {
+      background: white;
+      border: 1px solid #e0d9d0;
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    h1 { font-size: 1.4rem; color: #3b2008; margin-bottom: 24px; }
+
+    .success { color: #2e7d32; font-size: 0.85rem; margin-bottom: 16px; }
+    .error   { color: #c0392b; font-size: 0.85rem; margin-bottom: 16px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 16px; }
+
+    label { font-size: 0.85rem; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e0d9d0;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      color: #3b2008;
+      background: #faf9f7;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus { border-color: #6b3f1f; }
+    input:disabled { background: #f0ece8; color: #aaa; cursor: not-allowed; }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 11px;
+      background: #6b3f1f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    button[type="submit"]:hover { background: #3b2008; }
+  </style>
 </head>
 <body>
 
-  <h1>My Profile</h1>
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/home">← Back to Home</a>
+  </nav>
 
-  <% if (success) { %>
-    <p style="color: green;"><%= success %></p>
-  <% } %>
+  <div class="container">
+    <div class="card">
+      <h1>My Profile</h1>
 
-  <% if (failure) { %>
-    <p style="color: red;"><%= failure %></p>
-  <% } %>
+      <% if (success) { %><p class="success"><%= success %></p><% } %>
+      <% if (failure) { %><p class="error"><%= failure %></p><% } %>
 
-  <form method="POST" action="/profile">
-    <p>
-      <label for="userid"><strong>User ID:</strong></label><br />
-      <input type="text" id="userid" value="<%= user.userid %>" disabled />
-    </p>
+      <form method="POST" action="/profile">
+        <div class="form-group">
+          <div>
+            <label for="userid">User ID</label>
+            <input type="text" id="userid" value="<%= user.userid %>" disabled>
+          </div>
 
-    <p>
-      <label for="username"><strong>Username:</strong></label><br />
-      <input type="text" id="username" name="username" value="<%= user.username %>" required />
-    </p>
+          <div>
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" value="<%= user.username %>" required>
+          </div>
 
-    <button type="submit">Save Changes</button>
-  </form>
-
-  <br />
-  <a href="/home">Back to Home</a>
+          <button type="submit">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
 </body>
 </html>

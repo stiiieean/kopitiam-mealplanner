@@ -3,36 +3,130 @@
 <head>
   <meta charset="UTF-8" />
   <title>Home — Kopitiam</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #faf9f7;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: #6b3f1f;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 32px;
+    }
+
+    .navbar .brand {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .navbar a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 60px auto;
+      padding: 0 24px;
+    }
+
+    .greeting {
+      font-size: 1.5rem;
+      color: #3b2008;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 40px;
+      font-size: 0.95rem;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .menu a {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      border: 1px solid #e0d9d0;
+      border-radius: 10px;
+      padding: 20px 24px;
+      text-decoration: none;
+      color: #3b2008;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    .menu a:hover {
+      background: #f0e9df;
+    }
+
+    .menu a span.arrow {
+      color: #bbb;
+      font-size: 1.1rem;
+    }
+  </style>
 </head>
 <body>
 
-  <h1>Welcome to Kopitiam Meal Planner</h1>
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/logout">Logout</a>
+  </nav>
 
-  <% if (user) { %>
-    <p>Welcome, <strong><%= user.username %></strong>!</p>
-  <% } else { %>
-    <p>Welcome!</p>
-  <% } %>
+  <div class="container">
+    <h1 class="greeting">
+      <% if (user) { %>
+        Hello, <%= user.username %>
+      <% } else { %>
+        Hello!
+      <% } %>
+    </h1>
+    <p class="subtitle">What would you like to do today?</p>
 
-  <hr />
-
-  <h2>What would you like to do?</h2>
-
-  <p>
-    <a href="/ratings">Ratings Board</a> — Browse and review kopitiam stores
-  </p>
-
-  <p>
-    <a href="/meal-planner">Meal Planner</a> — Plan your meals for the week
-  </p>
-
-  <p>
-    <a href="/profile">My Profile</a> — View and update your profile
-  </p>
-
-  <hr />
-
-  <a href="/logout">Logout</a>
+    <div class="menu">
+      <a href="/ratings">
+        Ratings Board
+        <span class="arrow">›</span>
+      </a>
+      <a href="/meal-planner">
+        Meal Planner
+        <span class="arrow">›</span>
+      </a>
+      <a href="/profile">
+        My Profile
+        <span class="arrow">›</span>
+      </a>
+      <% if (user && user.role === 'admin') { %>
+      <a href="/admin">
+        Admin Dashboard
+        <span class="arrow">›</span>
+      </a>
+      <% } %>
+    </div>
+  </div>
 
 </body>
 </html>

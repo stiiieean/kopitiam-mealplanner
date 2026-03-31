@@ -57,6 +57,7 @@ exports.getStoreById = async (req, res) => {
         reviews: store.reviews,
         avgRating: avgRating(store.reviews),
       },
+      sessionUser: req.session.user || null,
     });
 
   } catch (error) {

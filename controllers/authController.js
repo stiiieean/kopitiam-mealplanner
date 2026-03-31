@@ -62,7 +62,8 @@ exports.postLogin = async (req, res) => {
       req.session.user = {
         _id: user._id,
         userid: user.userid,
-        username: user.username
+        username: user.username,
+        role: user.role
       };
       res.redirect('/home');
     } else {

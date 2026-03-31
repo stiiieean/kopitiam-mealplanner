@@ -2,50 +2,246 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title><%= store.name %></title>
+  <title><%= store.name %> — Kopitiam</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #faf9f7;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: #6b3f1f;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 32px;
+    }
+
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .navbar a:hover { text-decoration: underline; }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 24px;
+    }
+
+    .section {
+      background: white;
+      border: 1px solid #e0d9d0;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #3b2008;
+      margin-bottom: 12px;
+    }
+
+    .meta {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 12px;
+    }
+
+    .tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: #f0e9df;
+      color: #6b3f1f;
+      font-size: 0.78rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid #e0d9d0;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      color: #3b2008;
+      margin-bottom: 14px;
+    }
+
+    ul {
+      padding-left: 20px;
+      color: #555;
+      font-size: 0.92rem;
+      line-height: 1.8;
+    }
+
+    .add-review-btn {
+      display: inline-block;
+      margin-bottom: 16px;
+      padding: 9px 18px;
+      background: #6b3f1f;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .add-review-btn:hover { background: #3b2008; }
+
+    .review-card {
+      border-top: 1px solid #e0d9d0;
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .review-card:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .review-card h3 {
+      font-size: 1rem;
+      color: #3b2008;
+      margin-bottom: 4px;
+    }
+
+    .review-card .rating {
+      font-size: 0.85rem;
+      color: #6b3f1f;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .review-card p {
+      font-size: 0.9rem;
+      color: #444;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+
+    .review-card .byline {
+      font-size: 0.8rem;
+      color: #aaa;
+    }
+
+    .review-actions { display: flex; gap: 10px; margin-top: 8px; align-items: center; }
+
+    .edit-btn {
+      padding: 5px 12px;
+      background: white;
+      color: #6b3f1f;
+      border: 1px solid #e0d9d0;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .edit-btn:hover { background: #f0e9df; }
+
+    .delete-btn {
+      padding: 5px 12px;
+      background: white;
+      color: #c0392b;
+      border: 1px solid #f5c6c2;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover { background: #fdf0ef; }
+
+    .no-result {
+      font-size: 0.9rem;
+      color: #888;
+    }
+  </style>
 </head>
 <body>
 
-  <a href="/ratings">Back to Ratings Board</a>
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/ratings">← Back to Ratings Board</a>
+  </nav>
 
-  <h1><%= store.name %></h1>
-  <p>Location: <%= store.location %></p>
-  <p>Budget: $<%= store.budget %> avg/pax</p>
+  <div class="container">
 
-  <p>Tags:
-    <% store.tags.forEach(function(tag) { %>
-      <%= tag %>
-    <% }) %>
-  </p>
-
-  <h2>Menu Items</h2>
-  <% if (store.food && store.food.length > 0) { %>
-    <ul>
-      <% store.food.forEach(function(item) { %>
-        <li><%= item %></li>
-      <% }) %>
-    </ul>
-  <% } else { %>
-    <p>No menu items listed.</p>
-  <% } %>
-
-  <h2>Reviews (<%= store.reviews.length %>)</h2>
-
-  <a href="/ratings/<%= store._id %>/review/new">Add Review</a>
-
-  <% if (store.reviews.length === 0) { %>
-    <p>No reviews yet.</p>
-  <% } else { %>
-    <% store.reviews.forEach(function(review) { %>
-      <div>
-        <h3><%= review.title %></h3>
-        <p>Rating: <%= review.rating %> / 5</p>
-        <p><%= review.body %></p>
-        <p>By: <%= review.userid %> on <%= new Date(review.timestamp).toLocaleDateString("en-SG", { year: "numeric", month: "short", day: "numeric" }) %></p>
+    <!-- Store Info -->
+    <div class="section">
+      <h1><%= store.name %></h1>
+      <div class="meta">
+        <span>📍 <%= store.location %></span>
+        <span>💵 $<%= store.budget %> avg/pax</span>
       </div>
-      <hr />
-    <% }) %>
-  <% } %>
+      <div class="tags">
+        <% store.tags.forEach(function(tag) { %>
+          <span class="tag"><%= tag %></span>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <div class="section">
+      <h2>Menu Items</h2>
+      <% if (store.food && store.food.length > 0) { %>
+        <ul>
+          <% store.food.forEach(function(item) { %>
+            <li><%= item %></li>
+          <% }) %>
+        </ul>
+      <% } else { %>
+        <p class="no-result">No menu items listed.</p>
+      <% } %>
+    </div>
+
+    <!-- Reviews -->
+    <div class="section">
+      <h2>Reviews (<%= store.reviews.length %>)</h2>
+
+      <a href="/ratings/<%= store._id %>/review/new" class="add-review-btn">+ Add Review</a>
+
+      <% if (store.reviews.length === 0) { %>
+        <p class="no-result">No reviews yet.</p>
+      <% } else { %>
+        <% store.reviews.forEach(function(review) {
+            const isOwner = sessionUser && review.userid && review.userid.toString() === sessionUser._id.toString();
+            const isAdmin = sessionUser && sessionUser.role === 'admin';
+        %>
+          <div class="review-card">
+            <h3><%= review.title %></h3>
+            <p class="rating">★ <%= review.rating %> / 5</p>
+            <p><%= review.body %></p>
+            <p class="byline">By <%= review.userid ? review.userid.username : 'Anonymous' %> · <%= new Date(review.timestamp).toLocaleDateString("en-SG", { year: "numeric", month: "short", day: "numeric" }) %></p>
+            <% if (isOwner || isAdmin) { %>
+            <div class="review-actions">
+              <a href="/review/<%= review._id %>/edit" class="edit-btn">Edit</a>
+              <form action="/review/<%= review._id %>/delete" method="POST" style="display:inline;">
+                <button type="submit" class="delete-btn">Delete</button>
+              </form>
+            </div>
+            <% } %>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+
+  </div>
 
 </body>
 </html>

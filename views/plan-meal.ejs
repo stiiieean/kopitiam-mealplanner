@@ -1,54 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plan Meal</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan Meal — Kopitiam</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #faf9f7;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: #6b3f1f;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 32px;
+    }
+
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+    .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .navbar a:hover { text-decoration: underline; }
+
+    .container { max-width: 480px; margin: 48px auto; padding: 0 24px; }
+
+    .card {
+      background: white;
+      border: 1px solid #e0d9d0;
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    h1 { font-size: 1.3rem; color: #3b2008; margin-bottom: 24px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 16px; }
+
+    label { font-size: 0.85rem; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e0d9d0;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      color: #3b2008;
+      background: #faf9f7;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus { border-color: #6b3f1f; }
+    textarea { resize: vertical; }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 11px;
+      background: #6b3f1f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    button[type="submit"]:hover { background: #3b2008; }
+
+    .divider { border: none; border-top: 1px solid #e0d9d0; margin: 24px 0; }
+
+    .delete-btn {
+      width: 100%;
+      padding: 10px;
+      background: white;
+      color: #c0392b;
+      border: 1px solid #f5c6c2;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover { background: #fdf0ef; }
+  </style>
 </head>
 <body>
-    <nav>
-        <a href="/meal-planner">Back to Calendar</a>
-    </nav>
 
-    <h1><%= existingPlan ? 'Edit' : 'Plan' %> Meal for <%= date %></h1>
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/meal-planner">← Back to Calendar</a>
+  </nav>
 
-    <form action="/meal-planner/<%= date %>" method="POST">
-        <p>
-            <label><strong>Meal Name:</strong></label><br>
+  <div class="container">
+    <div class="card">
+      <h1><%= existingPlan ? 'Edit' : 'Plan' %> Meal for <%= date %></h1>
+
+      <form action="/meal-planner/<%= date %>" method="POST">
+        <div class="form-group">
+          <div>
+            <label>Meal Name</label>
             <input type="text" name="mealName" required value="<%= existingPlan ? existingPlan.mealName : '' %>">
-        </p>
+          </div>
 
-        <p>
-            <label><strong>Kopitiam Store:</strong></label><br>
+          <div>
+            <label>Kopitiam Store</label>
             <select name="storeName">
-                <option value="">-- Select a Store --</option>
-                <% stores.forEach(store => { %>
-                    <option value="<%= store.name %>" 
-                        <%= existingPlan && existingPlan.storeName === store.name ? 'selected' : '' %>>
-                        <%= store.name %>
-                    </option>
-                <% }) %>
+              <option value="">-- Select a Store --</option>
+              <% stores.forEach(store => { %>
+                <option value="<%= store.name %>" <%= existingPlan && existingPlan.storeName === store.name ? 'selected' : '' %>>
+                  <%= store.name %>
+                </option>
+              <% }) %>
             </select>
-        </p>
+          </div>
 
-        <p>
-            <label><strong>Budget ($):</strong></label><br>
+          <div>
+            <label>Budget ($)</label>
             <input type="number" name="budget" step="0.01" min="0" value="<%= existingPlan && existingPlan.budget ? existingPlan.budget : '' %>">
-        </p>
+          </div>
 
-        <p>
-            <label><strong>Notes:</strong></label><br>
-            <textarea name="notes" rows="4" cols="40"><%= existingPlan && existingPlan.notes ? existingPlan.notes : '' %></textarea>
-        </p>
+          <div>
+            <label>Notes</label>
+            <textarea name="notes" rows="3"><%= existingPlan && existingPlan.notes ? existingPlan.notes : '' %></textarea>
+          </div>
 
-        <button type="submit">Save</button>
-    </form>
+          <button type="submit">Save</button>
+        </div>
+      </form>
 
-    <% if(existingPlan) { %>
-        <hr>
+      <% if (existingPlan) { %>
+        <hr class="divider">
         <form action="/meal-planner/<%= date %>/delete" method="POST">
-            <button type="submit" style="color: red;">Clear This Day</button>
+          <button type="submit" class="delete-btn">Clear This Day</button>
         </form>
-    <% } %>
+      <% } %>
+    </div>
+  </div>
+
 </body>
 </html>

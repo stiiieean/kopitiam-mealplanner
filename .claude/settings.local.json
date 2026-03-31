@@ -3,7 +3,13 @@
     "allow": [
       "Bash(find C:UserskominDocumentsGitHubkopitiam-mealplanner -type f ! -path */.git/* -name *)",
       "Bash(find C:UserskominDocumentsGitHubkopitiam-mealplanner -type f ! -path */node_modules/* ! -path */.git/* ! -path */.vscode/*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(python -c \"import pdfplumber; pdf = pdfplumber.open\\(r''C:\\\\Users\\\\komin\\\\Desktop\\\\SMU\\\\Y1 Term 2 \\(2025\\)\\\\IS113 - Web Application\\\\Week 5\\\\[IS113] Week 5 - Node.js with Express Web Framework \\(Part 2\\).pdf''\\); print\\(f''Pages: {len\\(pdf.pages\\)}''\\)\")",
+      "Bash(python -c \"import pypdf; print\\(''''pypdf ok''''\\)\")",
+      "Bash(python -c \"import pymupdf; print\\(''''pymupdf ok''''\\)\")",
+      "Bash(pip list:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)"
     ]
   }
 }

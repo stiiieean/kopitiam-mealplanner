@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema({
   userid:   { type: String, required: true, unique: true },
   username: { type: String, required: true },
   password: { type: String, required: true },
+  role:     { type: String, enum: ['user', 'admin'], default: 'user' },
   calendar: {
     type: Map,
     of: new mongoose.Schema({
@@ -33,4 +34,12 @@ exports.findById = function(id) {
 
 exports.findByIdAndUpdate = function(id, update) {
   return User.findByIdAndUpdate(id, update, { new: true });
+};
+
+exports.findAll = function(projection) {
+  return User.find({}, projection).sort({ role: 1, userid: 1 });
+};
+
+exports.deleteById = function(id) {
+  return User.findByIdAndDelete(id);
 };

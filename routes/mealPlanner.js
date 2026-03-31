@@ -2,14 +2,9 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Store = require('../models/Store');
+const { requireLogin } = require('../middleware/auth');
 
-// check authoriz
-function isAuthenticated(req, res, next) {
-    if (req.session && req.session.user) return next();
-    res.redirect('/login');
-}
-
-router.use(isAuthenticated);
+router.use(requireLogin);
 
 // check callendar
 router.get('/', async (req, res) => {

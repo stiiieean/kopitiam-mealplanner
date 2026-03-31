@@ -2,54 +2,209 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Ratings Board</title>
+  <title>Ratings Board — Kopitiam</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #faf9f7;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: #6b3f1f;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 32px;
+    }
+
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .navbar a:hover { text-decoration: underline; }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 24px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #3b2008;
+      margin-bottom: 20px;
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar label {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .filter-bar select {
+      padding: 8px 12px;
+      border: 1px solid #e0d9d0;
+      border-radius: 8px;
+      background: white;
+      color: #3b2008;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .filter-bar select:focus { border-color: #6b3f1f; }
+
+    .filter-bar button {
+      padding: 8px 16px;
+      background: #6b3f1f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .filter-bar button:hover { background: #3b2008; }
+
+    .filter-bar a {
+      font-size: 0.85rem;
+      color: #6b3f1f;
+      text-decoration: none;
+    }
+
+    .filter-bar a:hover { text-decoration: underline; }
+
+    /* Store cards */
+    .store-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .store-card {
+      background: white;
+      border: 1px solid #e0d9d0;
+      border-radius: 10px;
+      padding: 20px 24px;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: background 0.15s;
+    }
+
+    .store-card:hover { background: #f0e9df; }
+
+    .store-card h2 {
+      font-size: 1.1rem;
+      color: #3b2008;
+      margin-bottom: 6px;
+    }
+
+    .store-card .meta {
+      font-size: 0.85rem;
+      color: #888;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .store-card .tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: #f0e9df;
+      color: #6b3f1f;
+      font-size: 0.75rem;
+      padding: 2px 10px;
+      border-radius: 20px;
+      border: 1px solid #e0d9d0;
+    }
+
+    .rating-badge {
+      font-size: 0.85rem;
+      color: #6b3f1f;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .no-result {
+      color: #888;
+      font-size: 0.95rem;
+    }
+  </style>
 </head>
 <body>
 
-  <h1>Ratings Board</h1>
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/home">← Back to Home</a>
+  </nav>
 
-  <!-- Budget Filter -->
-  <form method="GET" action="/ratings">
-    <label for="maxBudget">Filter by Max Budget (SGD):</label>
-    <select name="maxBudget" id="maxBudget">
-      <option value="">All budgets</option>
-      <option value="5"  <%= maxBudget == 5  ? "selected" : "" %>>$5 & under</option>
-      <option value="8"  <%= maxBudget == 8  ? "selected" : "" %>>$8 & under</option>
-      <option value="10" <%= maxBudget == 10 ? "selected" : "" %>>$10 & under</option>
-      <option value="15" <%= maxBudget == 15 ? "selected" : "" %>>$15 & under</option>
-    </select>
-    <button type="submit">Filter</button>
-    <% if (maxBudget) { %>
-      <a href="/ratings">Clear filter</a>
-    <% } %>
-  </form>
+  <div class="container">
+    <h1>Ratings Board</h1>
 
-  <hr />
+    <form method="GET" action="/ratings" class="filter-bar">
+      <label for="maxBudget">Max Budget (SGD):</label>
+      <select name="maxBudget" id="maxBudget">
+        <option value="">All budgets</option>
+        <option value="5"  <%= maxBudget == 5  ? "selected" : "" %>>$5 & under</option>
+        <option value="8"  <%= maxBudget == 8  ? "selected" : "" %>>$8 & under</option>
+        <option value="10" <%= maxBudget == 10 ? "selected" : "" %>>$10 & under</option>
+        <option value="15" <%= maxBudget == 15 ? "selected" : "" %>>$15 & under</option>
+      </select>
+      <button type="submit">Filter</button>
+      <% if (maxBudget) { %>
+        <a href="/ratings">Clear filter</a>
+      <% } %>
+    </form>
 
-  <% if (stores.length === 0) { %>
-    <p>No stores found.</p>
-  <% } else { %>
-    <% stores.forEach(function(store) { %>
-      <div>
-        <h2><a href="/ratings/<%= store._id %>"><%= store.name %></a></h2>
-        <p>Location: <%= store.location %></p>
-        <p>Budget: $<%= store.budget %> avg/pax</p>
-        <p>Tags:
-          <% store.tags.forEach(function(tag) { %>
-            <%= tag %>
-          <% }) %>
-        </p>
-        <p>
-          <% if (store.avgRating) { %>
-            Average Rating: <%= store.avgRating %> / 5 (<%= store.reviews.length %> review<%= store.reviews.length !== 1 ? "s" : "" %>)
-          <% } else { %>
-            No reviews yet
-          <% } %>
-        </p>
+    <% if (stores.length === 0) { %>
+      <p class="no-result">No stores found.</p>
+    <% } else { %>
+      <div class="store-list">
+        <% stores.forEach(function(store) { %>
+          <a href="/ratings/<%= store._id %>" class="store-card">
+            <h2><%= store.name %></h2>
+            <div class="meta">
+              <span>📍 <%= store.location %></span>
+              <span>💵 $<%= store.budget %> avg/pax</span>
+            </div>
+            <div class="tags">
+              <% store.tags.forEach(function(tag) { %>
+                <span class="tag"><%= tag %></span>
+              <% }) %>
+            </div>
+            <p class="rating-badge">
+              <% if (store.avgRating) { %>
+                ★ <%= store.avgRating %> / 5 &nbsp;·&nbsp; <%= store.reviews.length %> review<%= store.reviews.length !== 1 ? "s" : "" %>
+              <% } else { %>
+                No reviews yet
+              <% } %>
+            </p>
+          </a>
+        <% }) %>
       </div>
-      <hr />
-    <% }) %>
-  <% } %>
+    <% } %>
+  </div>
 
 </body>
 </html>
