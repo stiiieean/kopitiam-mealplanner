@@ -20,3 +20,8 @@ exports.retrieveAll = function(filter) {
 exports.retrieveById = function(id) {
   return StoreModel.findById(id).populate('reviews');
 };
+
+// Retrieve all stores without populating (for dropdowns)
+exports.find = function(filter) {
+  return StoreModel.find(filter || {});
+};

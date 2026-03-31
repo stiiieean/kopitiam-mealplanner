@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 
 // Specify the path to the environment variable file 'config.env'
 dotenv.config({ path: './config.env' });
@@ -19,7 +20,9 @@ server.use(express.static('public'));
 server.use(session({
   secret: process.env.SECRET,
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: process.env.DB }),
+  cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
 }));
 
 // Register models
@@ -30,11 +33,13 @@ const authRouter = require('./routes/auth');
 const homeRouter = require('./routes/home');
 const ratingsRouter = require('./routes/ratings');
 const reviewsRouter = require('./routes/reviews');
+const mealPlannerRouter = require('./routes/mealPlanner');
 
 server.use('/', authRouter);
 server.use('/home', homeRouter);
 server.use('/ratings', ratingsRouter);
 server.use('/', reviewsRouter);
+server.use('/meal-planner', mealPlannerRouter);
 
 // Root redirect to login
 server.get('/', (req, res) => res.redirect('/login'));
@@ -51,12 +56,8 @@ async function connectDB() {
 }
 
 function startServer() {
-  const hostname = 'localhost';
-  const port = 8000;
-
-  server.listen(port, hostname, () => {
-    console.log(`Server running at http://${hostname}:${port}/`);
-  });
+  const port = process.env.PORT || 8000;
+  server.listen(port, () => console.log(`Server running at http://localhost:${port}/`));
 }
 
 // Call connectDB first and when connection is ready, start the web server

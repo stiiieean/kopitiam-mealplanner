@@ -57,6 +57,7 @@ exports.postLogin = async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     if (match) {
       req.session.user = {
+        _id: user._id,
         userid: user.userid,
         username: user.username
       };
