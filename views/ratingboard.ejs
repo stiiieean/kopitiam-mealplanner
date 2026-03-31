@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ratings Board</title>
+</head>
+<body>
+
+  <h1>Ratings Board</h1>
+
+  <!-- Budget Filter -->
+  <form method="GET" action="/ratings">
+    <label for="maxBudget">Filter by Max Budget (SGD):</label>
+    <select name="maxBudget" id="maxBudget">
+      <option value="">All budgets</option>
+      <option value="5"  <%= maxBudget == 5  ? "selected" : "" %>>$5 & under</option>
+      <option value="8"  <%= maxBudget == 8  ? "selected" : "" %>>$8 & under</option>
+      <option value="10" <%= maxBudget == 10 ? "selected" : "" %>>$10 & under</option>
+      <option value="15" <%= maxBudget == 15 ? "selected" : "" %>>$15 & under</option>
+    </select>
+    <button type="submit">Filter</button>
+    <% if (maxBudget) { %>
+      <a href="/ratings">Clear filter</a>
+    <% } %>
+  </form>
+
+  <hr />
+
+  <% if (stores.length === 0) { %>
+    <p>No stores found.</p>
+  <% } else { %>
+    <% stores.forEach(function(store) { %>
+      <div>
+        <h2><a href="/ratings/<%= store._id %>"><%= store.name %></a></h2>
+        <p>Location: <%= store.location %></p>
+        <p>Budget: $<%= store.budget %> avg/pax</p>
+        <p>Tags:
+          <% store.tags.forEach(function(tag) { %>
+            <%= tag %>
+          <% }) %>
+        </p>
+        <p>
+          <% if (store.avgRating) { %>
+            Average Rating: <%= store.avgRating %> / 5 (<%= store.reviews.length %> review<%= store.reviews.length !== 1 ? "s" : "" %>)
+          <% } else { %>
+            No reviews yet
+          <% } %>
+        </p>
+      </div>
+      <hr />
+    <% }) %>
+  <% } %>
+
+</body>
+</html>

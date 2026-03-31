@@ -1,77 +1,149 @@
-const Review = require('./../models/Review');
-// const Store = require('./../models/Store');
+const Review = require('../models/Review');
+const Store = require('../models/Store');
 
+// GET /ratings/:storeId/review/new
 exports.getNewReview = async (req, res) => {
   const storeId = req.params.storeId;
-  res.render("add-review", { storeId });
-};
 
-exports.postNewReview = async (req, res) => {
   try {
-    const { title, body, rating } = req.body;
-    const storeId = req.params.storeId;
+    const store = await Store.retrieveById(storeId);
 
-    const review = new Review({
-      userid: req.session.user._id,
-      storeId,
-      title,
-      body,
-      rating
+    if (!store) {
+      return res.status(404).send('Store not found');
+    }
+
+    res.render('add-review', {
+      storeId: store._id,
+      storeName: store.name,
+      error: '',
     });
 
-    await review.save();
-
-    const store = await Store.findById(storeId);
-    store.reviews.push(review._id);
-    await store.save();
-
-    res.redirect(`/ratings/${storeId}`);
   } catch (error) {
-    console.log("Error posting review:", error);
-    res.render("add-review", { storeId, error: "Error posting review" });
+    console.error(error);
+    res.send('Error loading review form');
   }
 };
 
+// POST /ratings/:storeId/review/new
+exports.postNewReview = async (req, res) => {
+  const storeId = req.params.storeId;
+  const title = req.body.title;
+  const body = req.body.body;
+  const rating = Number(req.body.rating);
+
+  // TODO: replace with req.session.user._id once session is set up
+  // const userId = req.session.user._id;
+
+  // Server-side validation
+  let error = '';
+  if (!title || title.trim() === '') {
+    error = 'Title is required.';
+  } else if (!body || body.trim().length < 10) {
+    error = 'Review must be at least 10 characters.';
+  } else if (!rating || rating < 1 || rating > 5) {
+    error = 'Rating must be between 1 and 5.';
+  }
+
+  if (error) {
+    return res.render('add-review', {
+      storeId,
+      storeName: req.body.storeName,
+      error,
+    });
+  }
+
+  try {
+    const newReview = new Review({
+      storeId: storeId,
+      title: title.trim(),
+      body: body.trim(),
+      rating: rating,
+      timestamp: Date.now(),
+    });
+
+    const savedReview = await newReview.save();
+
+    // Link the review to the store
+    const store = await Store.retrieveById(storeId);
+    store.reviews.push(savedReview._id);
+    await store.save();
+
+    res.redirect('/ratings/' + storeId);
+
+  } catch (err) {
+    console.error(err);
+    res.send('Error saving review');
+  }
+};
+
+// GET /review/:reviewId/edit
 exports.getEditReview = async (req, res) => {
   try {
     const review = await Review.findById(req.params.reviewId);
-    if (!review) return res.send("Review not found");
+    if (!review) return res.send('Review not found');
 
-    res.render("edit-review", { review, storeId: review.storeId });
+    res.render('edit-review', { review, storeId: review.storeId, error: '' });
   } catch (error) {
-    console.log("Error loading review:", error);
-    res.render("edit-review", { error: "Error loading review" });
+    console.error('Error loading review:', error);
+    res.send('Error loading review');
   }
 };
 
+// POST /review/:reviewId/edit
 exports.postEditReview = async (req, res) => {
-  try {
-    const { title, body, rating } = req.body;
-    const reviewId = req.params.reviewId;
+  const reviewId = req.params.reviewId;
+  const { title, body, rating } = req.body;
 
-    await Review.findByIdAndUpdate(reviewId, { title, body, rating });
+  // Server-side validation
+  let error = '';
+  if (!title || title.trim() === '') {
+    error = 'Title is required.';
+  } else if (!body || body.trim().length < 10) {
+    error = 'Review must be at least 10 characters.';
+  } else if (!rating || Number(rating) < 1 || Number(rating) > 5) {
+    error = 'Rating must be between 1 and 5.';
+  }
+
+  if (error) {
     const review = await Review.findById(reviewId);
+    return res.render('edit-review', { review, storeId: review.storeId, error });
+  }
 
-    res.redirect(`/ratings/${review.storeId}`);
+  try {
+    await Review.findByIdAndUpdate(reviewId, {
+      title: title.trim(),
+      body: body.trim(),
+      rating: Number(rating),
+    });
+
+    const review = await Review.findById(reviewId);
+    res.redirect('/ratings/' + review.storeId);
   } catch (error) {
-    console.log("Error updating review:", error);
-    res.render("edit-review", { error: "Error updating review" });
+    console.error('Error updating review:', error);
+    res.send('Error updating review');
   }
 };
 
+// POST /review/:reviewId/delete
 exports.deleteReview = async (req, res) => {
+  const reviewId = req.params.reviewId;
+
   try {
-    const reviewId = req.params.reviewId;
     const review = await Review.findById(reviewId);
+    if (!review) return res.send('Review not found');
 
-    if (!review) return res.send("Review not found");
+    const storeId = review.storeId;
 
-    await Store.findByIdAndUpdate(review.storeId, { $pull: { reviews: reviewId } });
+    await Store.retrieveById(storeId).then(async (store) => {
+      store.reviews.pull(reviewId);
+      await store.save();
+    });
+
     await Review.findByIdAndDelete(reviewId);
 
-    res.redirect(`/ratings/${review.storeId}`);
+    res.redirect('/ratings/' + storeId);
   } catch (error) {
-    console.log("Error deleting review:", error);
-    res.send("Error deleting review");
+    console.error('Error deleting review:', error);
+    res.send('Error deleting review');
   }
 };

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= store.name %></title>
+</head>
+<body>
+
+  <a href="/ratings">Back to Ratings Board</a>
+
+  <h1><%= store.name %></h1>
+  <p>Location: <%= store.location %></p>
+  <p>Budget: $<%= store.budget %> avg/pax</p>
+
+  <p>Tags:
+    <% store.tags.forEach(function(tag) { %>
+      <%= tag %>
+    <% }) %>
+  </p>
+
+  <h2>Menu Items</h2>
+  <% if (store.food && store.food.length > 0) { %>
+    <ul>
+      <% store.food.forEach(function(item) { %>
+        <li><%= item %></li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>No menu items listed.</p>
+  <% } %>
+
+  <h2>Reviews (<%= store.reviews.length %>)</h2>
+
+  <a href="/ratings/<%= store._id %>/review/new">Add Review</a>
+
+  <% if (store.reviews.length === 0) { %>
+    <p>No reviews yet.</p>
+  <% } else { %>
+    <% store.reviews.forEach(function(review) { %>
+      <div>
+        <h3><%= review.title %></h3>
+        <p>Rating: <%= review.rating %> / 5</p>
+        <p><%= review.body %></p>
+        <p>By: <%= review.userid %> on <%= new Date(review.timestamp).toLocaleDateString("en-SG", { year: "numeric", month: "short", day: "numeric" }) %></p>
+      </div>
+      <hr />
+    <% }) %>
+  <% } %>
+
+</body>
+</html>

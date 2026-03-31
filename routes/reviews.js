@@ -1,9 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const ReviewController = require('./../controllers/ReviewController');
-
-router.get('/ratings/:storeId/review/new', ReviewController.getNewReview);
-router.post('/ratings/:storeId/review/new', ReviewController.postNewReview);
+const ReviewController = require('../controllers/ReviewController');
 
 router.get('/review/:reviewId/edit', ReviewController.getEditReview);
 router.post('/review/:reviewId/edit', ReviewController.postEditReview);
