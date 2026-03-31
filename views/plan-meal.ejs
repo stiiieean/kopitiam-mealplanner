@@ -26,30 +26,45 @@
     .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
     .navbar a:hover { text-decoration: underline; }
 
-    .container { max-width: 480px; margin: 48px auto; padding: 0 24px; }
-
-    .card {
-      background: white;
-      border: 1px solid #e0d9d0;
-      border-radius: 12px;
-      padding: 32px;
-    }
+    .container { max-width: 560px; margin: 40px auto; padding: 0 24px; }
 
     h1 { font-size: 1.3rem; color: #3b2008; margin-bottom: 24px; }
 
-    .form-group { display: flex; flex-direction: column; gap: 16px; }
+    .slot-card {
+      background: white;
+      border: 1px solid #e0d9d0;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
 
-    label { font-size: 0.85rem; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
+    .slot-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .slot-header .emoji { font-size: 1.1rem; }
+
+    .slot-header h2 {
+      font-size: 1rem;
+      color: #3b2008;
+      font-weight: 700;
+    }
+
+    .fields { display: flex; flex-direction: column; gap: 12px; }
+
+    label { font-size: 0.82rem; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
 
     input[type="text"],
     input[type="number"],
-    select,
     textarea {
       width: 100%;
-      padding: 10px 12px;
+      padding: 9px 12px;
       border: 1px solid #e0d9d0;
       border-radius: 8px;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       color: #3b2008;
       background: #faf9f7;
       font-family: inherit;
@@ -57,10 +72,26 @@
       transition: border-color 0.2s;
     }
 
-    input:focus, select:focus, textarea:focus { border-color: #6b3f1f; }
+    input:focus, textarea:focus { border-color: #6b3f1f; }
     textarea { resize: vertical; }
 
-    button[type="submit"] {
+    .hint {
+      font-size: 0.76rem;
+      color: #aaa;
+      margin-top: 3px;
+    }
+
+    .actions {
+      background: white;
+      border: 1px solid #e0d9d0;
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .save-btn {
       width: 100%;
       padding: 11px;
       background: #6b3f1f;
@@ -70,12 +101,9 @@
       font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
-      margin-top: 4px;
     }
 
-    button[type="submit"]:hover { background: #3b2008; }
-
-    .divider { border: none; border-top: 1px solid #e0d9d0; margin: 24px 0; }
+    .save-btn:hover { background: #3b2008; }
 
     .delete-btn {
       width: 100%;
@@ -99,50 +127,71 @@
     <a href="/meal-planner">← Back to Calendar</a>
   </nav>
 
+  <!-- Store names for autocomplete -->
+  <datalist id="store-list">
+    <% stores.forEach(store => { %>
+      <option value="<%= store.name %>">
+    <% }) %>
+  </datalist>
+
   <div class="container">
-    <div class="card">
-      <h1><%= existingPlan ? 'Edit' : 'Plan' %> Meal for <%= date %></h1>
+    <h1>Plan Meals for <%= date %></h1>
 
-      <form action="/meal-planner/<%= date %>" method="POST">
-        <div class="form-group">
-          <div>
-            <label>Meal Name</label>
-            <input type="text" name="mealName" required value="<%= existingPlan ? existingPlan.mealName : '' %>">
+    <form action="/meal-planner/<%= date %>" method="POST">
+
+      <%
+        const slotConfig = [
+          { key: 'breakfast', label: 'Breakfast', emoji: '🌅' },
+          { key: 'lunch',     label: 'Lunch',     emoji: '☀️'  },
+          { key: 'dinner',    label: 'Dinner',     emoji: '🌙' },
+          { key: 'supper',    label: 'Supper',     emoji: '🌃' }
+        ];
+      %>
+
+      <% slotConfig.forEach(function(slot) {
+        const saved = existingPlan && existingPlan[slot.key] ? existingPlan[slot.key] : null;
+      %>
+        <div class="slot-card">
+          <div class="slot-header">
+            <span class="emoji"><%= slot.emoji %></span>
+            <h2><%= slot.label %></h2>
           </div>
-
-          <div>
-            <label>Kopitiam Store</label>
-            <select name="storeName">
-              <option value="">-- Select a Store --</option>
-              <% stores.forEach(store => { %>
-                <option value="<%= store.name %>" <%= existingPlan && existingPlan.storeName === store.name ? 'selected' : '' %>>
-                  <%= store.name %>
-                </option>
-              <% }) %>
-            </select>
+          <div class="fields">
+            <div>
+              <label>Meal Name</label>
+              <input type="text" name="<%= slot.key %>[mealName]" placeholder="e.g. Nasi Lemak" value="<%= saved ? saved.mealName : '' %>">
+            </div>
+            <div>
+              <label>Store / Hawker Centre</label>
+              <input type="text" name="<%= slot.key %>[storeName]" placeholder="Type or pick a store" list="store-list" value="<%= saved && saved.storeName ? saved.storeName : '' %>">
+              <p class="hint">Pick an existing store or type a new one — it will be added to the Ratings Board automatically.</p>
+            </div>
+            <div>
+              <label>Budget ($)</label>
+              <input type="number" name="<%= slot.key %>[budget]" step="0.01" min="0" placeholder="0.00" value="<%= saved && saved.budget ? saved.budget : '' %>">
+            </div>
+            <div>
+              <label>Notes</label>
+              <textarea name="<%= slot.key %>[notes]" rows="2" placeholder="e.g. No chilli"><%= saved && saved.notes ? saved.notes : '' %></textarea>
+            </div>
           </div>
-
-          <div>
-            <label>Budget ($)</label>
-            <input type="number" name="budget" step="0.01" min="0" value="<%= existingPlan && existingPlan.budget ? existingPlan.budget : '' %>">
-          </div>
-
-          <div>
-            <label>Notes</label>
-            <textarea name="notes" rows="3"><%= existingPlan && existingPlan.notes ? existingPlan.notes : '' %></textarea>
-          </div>
-
-          <button type="submit">Save</button>
         </div>
-      </form>
+      <% }) %>
 
-      <% if (existingPlan) { %>
-        <hr class="divider">
-        <form action="/meal-planner/<%= date %>/delete" method="POST">
-          <button type="submit" class="delete-btn">Clear This Day</button>
-        </form>
-      <% } %>
-    </div>
+      <div class="actions">
+        <button type="submit" class="save-btn">Save</button>
+
+        <% if (existingPlan && Object.keys(existingPlan.toObject ? existingPlan.toObject() : existingPlan).some(k => ['breakfast','lunch','dinner','supper'].includes(k))) { %>
+          <button type="button" class="delete-btn"
+            onclick="document.getElementById('delete-form').submit()">
+            Clear This Day
+          </button>
+        <% } %>
+      </div>
+
+    </form>
+
+    <form id="delete-form" action="/meal-planner/<%= date %>/delete" method="POST" style="display:none;"></form>
   </div>
 
 </body>

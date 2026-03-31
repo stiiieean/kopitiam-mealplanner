@@ -1,4 +1,6 @@
 const User = require('../models/User');
+const Review = require('../models/Review');
+const Store = require('../models/Store');
 
 // GET /profile
 exports.getProfile = async (req, res) => {
@@ -9,6 +11,40 @@ exports.getProfile = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.send('Error loading profile');
+  }
+};
+
+// POST /profile/delete
+exports.deleteAccount = async (req, res) => {
+  const userId = req.session.user._id;
+
+  try {
+    // Find all reviews by this user
+    const userReviews = await Review.find({ userid: userId });
+
+    // Remove each review's reference from its store
+    for (const review of userReviews) {
+      await Store.retrieveById(review.storeId).then(store => {
+        if (store) {
+          store.reviews.pull(review._id);
+          return store.save();
+        }
+      });
+    }
+
+    // Delete all reviews by the user
+    await Review.deleteMany({ userid: userId });
+
+    // Delete the user
+    await User.deleteById(userId);
+
+    // Destroy session and redirect to login
+    req.session.destroy(() => {
+      res.redirect('/login');
+    });
+  } catch (error) {
+    console.error(error);
+    res.send('Error deleting account');
   }
 };
 

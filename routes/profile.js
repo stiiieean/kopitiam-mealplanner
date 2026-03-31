@@ -5,5 +5,6 @@ const { requireLogin } = require('../middleware/auth');
 
 router.get('/', requireLogin, profileController.getProfile);
 router.post('/', requireLogin, profileController.postProfile);
+router.post('/delete', requireLogin, profileController.deleteAccount);
 
 module.exports = router;

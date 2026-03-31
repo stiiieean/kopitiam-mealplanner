@@ -8,10 +8,10 @@ const userSchema = new mongoose.Schema({
   calendar: {
     type: Map,
     of: new mongoose.Schema({
-      mealName:  { type: String, required: true },
-      storeName: { type: String },
-      notes:     { type: String },
-      budget:    { type: Number, min: 0 }
+      breakfast: { type: new mongoose.Schema({ mealName: String, storeName: String, notes: String, budget: { type: Number, min: 0 } }, { _id: false }) },
+      lunch:     { type: new mongoose.Schema({ mealName: String, storeName: String, notes: String, budget: { type: Number, min: 0 } }, { _id: false }) },
+      dinner:    { type: new mongoose.Schema({ mealName: String, storeName: String, notes: String, budget: { type: Number, min: 0 } }, { _id: false }) },
+      supper:    { type: new mongoose.Schema({ mealName: String, storeName: String, notes: String, budget: { type: Number, min: 0 } }, { _id: false }) },
     }, { _id: false }),
     default: {}
   },

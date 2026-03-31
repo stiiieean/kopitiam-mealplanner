@@ -36,6 +36,11 @@ exports.createStore = function(data) {
   return StoreModel.create(data);
 };
 
+// Update a store by ID
+exports.updateStore = function(id, data) {
+  return StoreModel.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+};
+
 // Delete a store by ID
 exports.deleteStore = function(id) {
   return StoreModel.findByIdAndDelete(id);

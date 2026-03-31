@@ -225,9 +225,12 @@
           </div>
         </div>
         <% if (sessionUser && sessionUser.role === 'admin') { %>
-          <form action="/ratings/<%= store._id %>/delete" method="POST" style="flex-shrink: 0;">
-            <button type="submit" class="delete-btn">Delete Store</button>
-          </form>
+          <div style="display: flex; gap: 8px; flex-shrink: 0;">
+            <a href="/ratings/<%= store._id %>/edit" class="edit-btn" style="padding: 5px 12px; font-size: 0.85rem;">Edit Store</a>
+            <form action="/ratings/<%= store._id %>/delete" method="POST">
+              <button type="submit" class="delete-btn">Delete Store</button>
+            </form>
+          </div>
         <% } %>
       </div>
     </div>

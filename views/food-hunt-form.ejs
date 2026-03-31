@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= hunt ? 'Edit Hunt' : 'New Food Hunt' %> — Kopitiam</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: 'Segoe UI', sans-serif; background: #faf9f7; min-height: 100vh; }
+
+    .navbar {
+      background: #6b3f1f; color: white;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 32px;
+    }
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+    .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .navbar a:hover { text-decoration: underline; }
+
+    .container { max-width: 500px; margin: 48px auto; padding: 0 24px; }
+
+    .card {
+      background: white;
+      border: 1px solid #e0d9d0;
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    h1 { font-size: 1.3rem; color: #3b2008; margin-bottom: 6px; }
+
+    .subtitle { font-size: 0.85rem; color: #888; margin-bottom: 24px; }
+
+    .error { color: #c0392b; font-size: 0.85rem; margin-bottom: 16px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 18px; }
+
+    label { font-size: 0.85rem; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
+
+    .hint { font-size: 0.76rem; color: #aaa; margin-top: 4px; }
+
+    textarea,
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e0d9d0;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      color: #3b2008;
+      background: #faf9f7;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus, input:focus, select:focus { border-color: #6b3f1f; }
+    textarea { resize: vertical; }
+
+    .tags-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .tag-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: #555;
+      padding: 5px 12px;
+      border: 1px solid #e0d9d0;
+      border-radius: 20px;
+      cursor: pointer;
+      background: #faf9f7;
+      font-weight: 400;
+      transition: background 0.15s;
+    }
+
+    .tag-label:hover { background: #f0e9df; }
+    .tag-label input[type="checkbox"] { accent-color: #6b3f1f; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background: #6b3f1f; color: white;
+      border: none; border-radius: 8px;
+      font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; margin-top: 4px;
+    }
+    .submit-btn:hover { background: #3b2008; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/food-hunt">← Back to Food Hunt</a>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h1><%= hunt ? 'Edit Food Hunt' : 'New Food Hunt' %></h1>
+      <p class="subtitle">Tell us what you want and your budget — we'll find the best stores for you.</p>
+
+      <% if (error) { %><p class="error"><%= error %></p><% } %>
+
+      <form action="<%= hunt ? '/food-hunt/' + hunt._id + '/edit' : '/food-hunt/new' %>" method="POST">
+        <div class="form-group">
+
+          <div>
+            <label>What are you looking for?</label>
+            <div class="tags-grid">
+              <% const allTags = ['hawker', 'coffeeshop', 'halal', 'chinese', 'indian', 'malay', 'western', 'local', 'vegetarian', 'seafood', 'dessert', 'drinks']; %>
+              <% const selectedTags = hunt ? hunt.requirements.split(',').map(t => t.trim()) : []; %>
+              <% allTags.forEach(function(tag) { %>
+                <label class="tag-label">
+                  <input type="checkbox" name="tags" value="<%= tag %>" <%= selectedTags.includes(tag) ? 'checked' : '' %>>
+                  <%= tag %>
+                </label>
+              <% }) %>
+            </div>
+            <p class="hint">Select the type of food or cuisine you want. We'll match these against stores in the Ratings Board.</p>
+          </div>
+
+          <div>
+            <label for="totalBudget">Total Budget for the Day ($)</label>
+            <input type="number" id="totalBudget" name="totalBudget" step="0.50" min="1"
+              placeholder="e.g. 20" value="<%= hunt ? hunt.totalBudget : '' %>">
+          </div>
+
+          <div>
+            <label for="numMeals">Number of Meals</label>
+            <select id="numMeals" name="numMeals">
+              <% [1,2,3,4].forEach(function(n) { %>
+                <option value="<%= n %>" <%= hunt && hunt.numMeals === n ? 'selected' : '' %>><%= n %> meal<%= n > 1 ? 's' : '' %></option>
+              <% }) %>
+            </select>
+            <p class="hint">Your budget will be split evenly across the number of meals to find stores you can afford each time.</p>
+          </div>
+
+          <button type="submit" class="submit-btn"><%= hunt ? 'Update & Recalculate' : 'Find Stores' %></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>

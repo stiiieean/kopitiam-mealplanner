@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Store — Kopitiam</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #faf9f7;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: #6b3f1f;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 32px;
+    }
+
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+    .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .navbar a:hover { text-decoration: underline; }
+
+    .container { max-width: 640px; margin: 40px auto; padding: 0 24px; }
+
+    .card {
+      background: white;
+      border: 1px solid #e0d9d0;
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    h1 { font-size: 1.4rem; color: #3b2008; margin-bottom: 24px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 18px; }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #555;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e0d9d0;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      color: #3b2008;
+      background: #faf9f7;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus { border-color: #6b3f1f; }
+
+    .location-search {
+      display: flex;
+      gap: 8px;
+    }
+
+    .location-search input { flex: 1; }
+
+    .search-btn {
+      padding: 10px 16px;
+      background: #6b3f1f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .search-btn:hover { background: #3b2008; }
+
+    #search-results {
+      border: 1px solid #e0d9d0;
+      border-radius: 8px;
+      background: white;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .result-item {
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: #3b2008;
+      cursor: pointer;
+      border-bottom: 1px solid #f0ece8;
+    }
+
+    .result-item:last-child { border-bottom: none; }
+    .result-item:hover { background: #f0e9df; }
+
+    #map {
+      height: 280px;
+      border-radius: 8px;
+      border: 1px solid #e0d9d0;
+      margin-top: 10px;
+    }
+
+    .map-hint {
+      font-size: 0.78rem;
+      color: #aaa;
+      margin-top: 5px;
+    }
+
+    .tags-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: #555;
+      padding: 5px 12px;
+      border: 1px solid #e0d9d0;
+      border-radius: 20px;
+      cursor: pointer;
+      background: #faf9f7;
+      transition: background 0.15s;
+    }
+
+    .tag-label:hover { background: #f0e9df; }
+
+    .tag-label input[type="checkbox"] {
+      accent-color: #6b3f1f;
+    }
+
+    #food-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .food-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .food-row input { flex: 1; }
+
+    .remove-btn {
+      padding: 8px 12px;
+      background: white;
+      color: #c0392b;
+      border: 1px solid #f5c6c2;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .remove-btn:hover { background: #fdf0ef; }
+
+    .add-food-btn {
+      padding: 8px 16px;
+      background: white;
+      color: #6b3f1f;
+      border: 1px solid #e0d9d0;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: fit-content;
+    }
+
+    .add-food-btn:hover { background: #f0e9df; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background: #6b3f1f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .submit-btn:hover { background: #3b2008; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/ratings/<%= store._id %>">← Back to Store</a>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h1>Edit Store</h1>
+
+      <% if (error) { %>
+        <p style="color: red; font-size: 0.85rem; margin-bottom: 16px;"><%= error %></p>
+      <% } %>
+
+      <form action="/ratings/<%= store._id %>/edit" method="POST" class="form-group">
+
+        <!-- Store Name -->
+        <div>
+          <label for="name">Store / Hawker Centre Name</label>
+          <input type="text" id="name" name="name" placeholder="e.g. Maxwell Food Centre" value="<%= store.name %>" required>
+        </div>
+
+        <!-- Location Search -->
+        <div>
+          <label>Location</label>
+          <div class="location-search">
+            <input type="text" id="location-search-input" placeholder="Search for a location in Singapore..." value="<%= store.location %>">
+            <button type="button" class="search-btn" onclick="searchLocation()">Search</button>
+          </div>
+          <div id="search-results"></div>
+          <div id="map"></div>
+          <p class="map-hint">Search for a place or click on the map to pin the location.</p>
+          <input type="hidden" id="location" name="location" value="<%= store.location %>">
+          <input type="hidden" id="lat" name="lat" value="<%= store.lat || '' %>">
+          <input type="hidden" id="lng" name="lng" value="<%= store.lng || '' %>">
+          <p id="selected-location-display" style="font-size: 0.82rem; color: #6b3f1f; margin-top: 6px;"><%= store.location ? '📍 Selected: ' + store.location : '' %></p>
+        </div>
+
+        <!-- Budget -->
+        <div>
+          <label for="budget">Average Budget per Person (SGD $)</label>
+          <input type="number" id="budget" name="budget" placeholder="e.g. 5" min="0.50" step="0.50" value="<%= store.budget %>" required>
+        </div>
+
+        <!-- Tags -->
+        <div>
+          <label>Tags</label>
+          <div class="tags-grid">
+            <% const allTags = ['hawker', 'coffeeshop', 'halal', 'chinese', 'indian', 'malay', 'western', 'local', 'vegetarian', 'seafood', 'dessert', 'drinks']; %>
+            <% allTags.forEach(tag => { %>
+              <label class="tag-label">
+                <input type="checkbox" name="tags" value="<%= tag %>" <%= store.tags && store.tags.includes(tag) ? 'checked' : '' %>>
+                <%= tag %>
+              </label>
+            <% }) %>
+          </div>
+        </div>
+
+        <!-- Food Items -->
+        <div>
+          <label>Menu Items <span style="font-weight: 400; color: #aaa;">(optional)</span></label>
+          <div id="food-list">
+            <% if (store.food && store.food.length > 0) { %>
+              <% store.food.forEach(function(item) { %>
+                <div class="food-row">
+                  <input type="text" name="food" value="<%= item %>">
+                  <button type="button" class="remove-btn" onclick="removeFood(this)">✕</button>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <div class="food-row">
+                <input type="text" name="food" placeholder="e.g. Chicken Rice">
+                <button type="button" class="remove-btn" onclick="removeFood(this)">✕</button>
+              </div>
+            <% } %>
+          </div>
+          <button type="button" class="add-food-btn" onclick="addFood()" style="margin-top: 8px;">+ Add Item</button>
+        </div>
+
+        <button type="submit" class="submit-btn">Save Changes</button>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    const initialLat = <%= store.lat || 1.3521 %>;
+    const initialLng = <%= store.lng || 103.8198 %>;
+    const initialZoom = <%= store.lat ? 16 : 12 %>;
+
+    const map = L.map('map').setView([initialLat, initialLng], initialZoom);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = null;
+
+    <% if (store.lat && store.lng) { %>
+      marker = L.marker([<%= store.lat %>, <%= store.lng %>]).addTo(map);
+    <% } %>
+
+    function placeMarker(lat, lng, displayName) {
+      if (marker) {
+        marker.setLatLng([lat, lng]);
+      } else {
+        marker = L.marker([lat, lng]).addTo(map);
+      }
+
+      map.setView([lat, lng], 16);
+      document.getElementById('location').value = displayName;
+      document.getElementById('lat').value = lat;
+      document.getElementById('lng').value = lng;
+
+      const display = document.getElementById('selected-location-display');
+      display.textContent = '📍 Selected: ' + displayName;
+    }
+
+    map.on('click', function(e) {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+        .then(res => res.json())
+        .then(data => {
+          const displayName = data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+          placeMarker(lat, lng, displayName);
+        })
+        .catch(() => {
+          placeMarker(lat, lng, `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+        });
+    });
+
+    function searchLocation() {
+      const query = document.getElementById('location-search-input').value.trim();
+      if (!query) return;
+
+      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&countrycodes=sg&limit=5`)
+        .then(res => res.json())
+        .then(results => {
+          const container = document.getElementById('search-results');
+          container.innerHTML = '';
+
+          if (results.length === 0) {
+            container.style.display = 'block';
+            container.innerHTML = '<div class="result-item" style="color:#aaa;">No results found.</div>';
+            return;
+          }
+
+          container.style.display = 'block';
+
+          results.forEach(result => {
+            const item = document.createElement('div');
+            item.className = 'result-item';
+            item.textContent = result.display_name;
+
+            item.addEventListener('click', function() {
+              placeMarker(parseFloat(result.lat), parseFloat(result.lon), result.display_name);
+              document.getElementById('location-search-input').value = result.display_name;
+              container.style.display = 'none';
+            });
+
+            container.appendChild(item);
+          });
+        })
+        .catch(() => {
+          const container = document.getElementById('search-results');
+          container.style.display = 'block';
+          container.innerHTML = '<div class="result-item" style="color:#aaa;">Search failed. Please try again.</div>';
+        });
+    }
+
+    document.getElementById('location-search-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        searchLocation();
+      }
+    });
+
+    document.addEventListener('click', function(e) {
+      const container = document.getElementById('search-results');
+      if (!container.contains(e.target) && e.target.id !== 'location-search-input') {
+        container.style.display = 'none';
+      }
+    });
+
+    function addFood() {
+      const list = document.getElementById('food-list');
+      const row = document.createElement('div');
+      row.className = 'food-row';
+      row.innerHTML = `
+        <input type="text" name="food" placeholder="e.g. Char Kway Teow">
+        <button type="button" class="remove-btn" onclick="removeFood(this)">✕</button>
+      `;
+      list.appendChild(row);
+    }
+
+    function removeFood(btn) {
+      const list = document.getElementById('food-list');
+      if (list.children.length > 1) {
+        btn.parentElement.remove();
+      } else {
+        btn.previousElementSibling.value = '';
+      }
+    }
+  </script>
+
+</body>
+</html>

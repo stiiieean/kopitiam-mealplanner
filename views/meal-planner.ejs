@@ -26,7 +26,7 @@
     .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
     .navbar a:hover { text-decoration: underline; }
 
-    .container { max-width: 900px; margin: 36px auto; padding: 0 24px; }
+    .container { max-width: 960px; margin: 36px auto; padding: 0 24px; }
 
     .top-row {
       display: flex;
@@ -74,24 +74,35 @@
     tbody td {
       border: 1px solid #e0d9d0;
       vertical-align: top;
-      height: 100px;
-      padding: 7px;
-      font-size: 0.8rem;
+      height: 110px;
+      padding: 6px 7px;
+      font-size: 0.75rem;
     }
 
-    .day-num { font-weight: 700; color: #3b2008; margin-bottom: 4px; }
-    .meal-name { color: #6b3f1f; font-weight: 600; }
-    .meal-store, .meal-budget { color: #999; font-size: 0.76rem; }
+    .day-num { font-weight: 700; color: #3b2008; margin-bottom: 3px; }
+
+    .slot-line {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #555;
+      margin-bottom: 1px;
+    }
+
+    .slot-line .slot-emoji { margin-right: 2px; }
+    .slot-line .slot-name  { color: #6b3f1f; font-weight: 600; }
+    .slot-line .slot-price { color: #999; font-size: 0.7rem; }
+    .day-total { font-size: 0.72rem; font-weight: 700; color: #3b2008; margin-top: 3px; border-top: 1px solid #e0d9d0; padding-top: 2px; }
 
     .day-link {
       display: inline-block;
-      margin-top: 5px;
-      font-size: 0.74rem;
+      margin-top: 4px;
+      font-size: 0.72rem;
       color: #6b3f1f;
       text-decoration: none;
       border: 1px solid #e0d9d0;
       border-radius: 4px;
-      padding: 1px 7px;
+      padding: 1px 6px;
     }
     .day-link:hover { background: #f0e9df; }
 
@@ -111,6 +122,13 @@
     if (prevMonth < 0) { prevMonth = 11; prevYear--; }
     let nextMonth = month + 1, nextYear = year;
     if (nextMonth > 11) { nextMonth = 0; nextYear++; }
+
+    const slotConfig = [
+      { key: 'breakfast', emoji: '🌅' },
+      { key: 'lunch',     emoji: '☀️'  },
+      { key: 'dinner',    emoji: '🌙' },
+      { key: 'supper',    emoji: '🌃' }
+    ];
   %>
 
   <div class="container">
@@ -130,25 +148,40 @@
       <tbody>
         <tr>
           <% for (let i = 0; i < firstDay; i++) { %><td class="empty"></td><% } %>
+
           <% for (let day = 1; day <= daysInMonth; day++) {
-            let mFormat = (month + 1).toString().padStart(2, '0');
-            let dFormat = day.toString().padStart(2, '0');
-            let dateString = `${year}-${mFormat}-${dFormat}`;
-            let meal = calendar.has(dateString) ? calendar.get(dateString) : null;
+            const mFormat     = (month + 1).toString().padStart(2, '0');
+            const dFormat     = day.toString().padStart(2, '0');
+            const dateString  = `${year}-${mFormat}-${dFormat}`;
+            const dayPlan     = calendar.has(dateString) ? calendar.get(dateString) : null;
+            const filledSlots = dayPlan ? slotConfig.filter(s => dayPlan[s.key] && dayPlan[s.key].mealName) : [];
+            const dayTotal    = filledSlots.reduce((sum, s) => sum + (dayPlan[s.key].budget || 0), 0);
           %>
             <td>
               <div class="day-num"><%= day %></div>
-              <% if (meal) { %>
-                <div class="meal-name"><%= meal.mealName %></div>
-                <div class="meal-store"><%= meal.storeName %></div>
-                <div class="meal-budget">$<%= meal.budget ? meal.budget.toFixed(2) : '0.00' %></div>
+
+              <% filledSlots.forEach(function(s) { %>
+                <div class="slot-line">
+                  <span class="slot-emoji"><%= s.emoji %></span><span class="slot-name"><%= dayPlan[s.key].mealName %></span>
+                  <% if (dayPlan[s.key].budget) { %><span class="slot-price"> $<%= dayPlan[s.key].budget.toFixed(2) %></span><% } %>
+                </div>
+              <% }) %>
+
+              <% if (filledSlots.length > 0 && dayTotal > 0) { %>
+                <div class="day-total">Total: $<%= dayTotal.toFixed(2) %></div>
               <% } %>
-              <a href="/meal-planner/<%= dateString %>" class="day-link"><%= meal ? 'Edit' : 'Add' %></a>
+
+              <a href="/meal-planner/<%= dateString %>" class="day-link"><%= filledSlots.length > 0 ? 'Edit' : 'Add' %></a>
             </td>
-          <% if ((day + firstDay) % 7 === 0) { %></tr><tr><% }
-          }
-          let rem = 7 - ((daysInMonth + firstDay) % 7);
-          if (rem < 7) { for (let i = 0; i < rem; i++) { %><td class="empty"></td><% } } %>
+
+          <% if ((day + firstDay) % 7 === 0 && day !== daysInMonth) { %></tr><tr><% } %>
+          <% } %>
+
+          <%
+            const rem = (daysInMonth + firstDay) % 7;
+            if (rem !== 0) { for (let i = rem; i < 7; i++) { %>
+              <td class="empty"></td>
+          <% } } %>
         </tr>
       </tbody>
     </table>

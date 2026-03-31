@@ -53,6 +53,68 @@ exports.postNewStore = async (req, res) => {
   }
 };
 
+// GET /ratings/:storeId/edit
+exports.getEditStore = async (req, res) => {
+  try {
+    const store = await Store.retrieveById(req.params.storeId);
+    if (!store) return res.redirect('/ratings');
+    res.render('edit-store', { store, error: null });
+  } catch (err) {
+    console.error(err);
+    res.send('Error loading store');
+  }
+};
+
+// POST /ratings/:storeId/edit
+exports.postEditStore = async (req, res) => {
+  const { name, location, budget, tags, food, lat, lng } = req.body;
+  const storeId = req.params.storeId;
+
+  if (!name || name.trim() === '') {
+    const store = await Store.retrieveById(storeId);
+    return res.render('edit-store', { store, error: 'Store name is required.' });
+  }
+
+  if (!location || location.trim() === '') {
+    const store = await Store.retrieveById(storeId);
+    return res.render('edit-store', { store, error: 'Location is required. Please search and select a location on the map.' });
+  }
+
+  if (!budget || isNaN(budget) || Number(budget) <= 0) {
+    const store = await Store.retrieveById(storeId);
+    return res.render('edit-store', { store, error: 'Please enter a valid budget greater than 0.' });
+  }
+
+  let tagsArray = [];
+  if (tags) {
+    tagsArray = Array.isArray(tags) ? tags : [tags];
+  }
+
+  let foodArray = [];
+  if (food) {
+    const raw = Array.isArray(food) ? food : [food];
+    foodArray = raw.map(f => f.trim()).filter(f => f !== '');
+  }
+
+  try {
+    await Store.updateStore(storeId, {
+      name: name.trim(),
+      location: location.trim(),
+      budget: Number(budget),
+      lat: lat ? Number(lat) : null,
+      lng: lng ? Number(lng) : null,
+      tags: tagsArray,
+      food: foodArray,
+    });
+
+    res.redirect(`/ratings/${storeId}`);
+  } catch (err) {
+    console.error(err);
+    const store = await Store.retrieveById(storeId);
+    res.render('edit-store', { store, error: 'Error saving store. Please try again.' });
+  }
+};
+
 // POST /ratings/:storeId/delete
 exports.deleteStore = async (req, res) => {
   const storeId = req.params.storeId;

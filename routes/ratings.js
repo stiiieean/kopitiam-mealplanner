@@ -13,6 +13,8 @@ router.get('/', requireLogin, ratingsController.getAllStores);
 router.get('/:storeId', requireLogin, ratingsController.getStoreById);
 router.get('/:storeId/review/new', requireLogin, reviewController.getNewReview);
 router.post('/:storeId/review/new', requireLogin, reviewController.postNewReview);
+router.get('/:storeId/edit', requireLogin, requireAdmin, storeController.getEditStore);
+router.post('/:storeId/edit', requireLogin, requireAdmin, storeController.postEditStore);
 router.post('/:storeId/delete', requireLogin, requireAdmin, storeController.deleteStore);
 
 module.exports = router;
