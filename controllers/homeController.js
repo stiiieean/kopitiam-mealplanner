@@ -5,8 +5,14 @@ exports.getHome = (req, res) => {
   //   return res.redirect('/login');
   // }
 
-  // TODO: replace with req.session.user once session is integrated
   const user = req.session ? req.session.user : null;
 
   res.render('home', { user });
+};
+
+// GET /logout
+exports.logout = (req, res) => {
+  req.session.destroy(() => {
+    res.redirect('/login');
+  });
 };

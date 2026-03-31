@@ -26,6 +26,13 @@ server.use('/ratings', ratingsRouter);
 server.use('/home', homeRouter);
 server.use('/', reviewsRouter);
 
+// Logout route
+server.get('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.redirect('/login');
+  });
+});
+
 // Root redirect to home
 server.get('/', (req, res) => res.redirect('/home'));
 
