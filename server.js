@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const session = require('express-session');
 
 // Specify the path to the environment variable file 'config.env'
 dotenv.config({ path: './config.env' });
@@ -14,27 +15,29 @@ server.set('view engine', 'ejs');
 server.use(express.urlencoded({ extended: true }));
 server.use(express.static('public'));
 
+// Session
+server.use(session({
+  secret: process.env.SECRET,
+  resave: false,
+  saveUninitialized: false
+}));
+
 // Register models
 require('./models/Review');
 
 // Routes
-const ratingsRouter = require('./routes/ratings');
+const authRouter = require('./routes/auth');
 const homeRouter = require('./routes/home');
+const ratingsRouter = require('./routes/ratings');
 const reviewsRouter = require('./routes/reviews');
 
-server.use('/ratings', ratingsRouter);
+server.use('/', authRouter);
 server.use('/home', homeRouter);
+server.use('/ratings', ratingsRouter);
 server.use('/', reviewsRouter);
 
-// Logout route
-server.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/login');
-  });
-});
-
-// Root redirect to home
-server.get('/', (req, res) => res.redirect('/home'));
+// Root redirect to login
+server.get('/', (req, res) => res.redirect('/login'));
 
 // Async function to connect to DB
 async function connectDB() {

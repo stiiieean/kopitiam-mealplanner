@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find C:UserskominDocumentsGitHubkopitiam-mealplanner -type f ! -path */.git/* -name *)",
+      "Bash(find C:UserskominDocumentsGitHubkopitiam-mealplanner -type f ! -path */node_modules/* ! -path */.git/* ! -path */.vscode/*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}
