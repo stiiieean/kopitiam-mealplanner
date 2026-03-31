@@ -16,6 +16,12 @@ server.set('view engine', 'ejs');
 server.use(express.urlencoded({ extended: true }));
 server.use(express.static('public'));
 
+// Prevent browser from caching pages so back/forward never shows stale auth state
+server.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 // Session
 server.use(session({
   secret: process.env.SECRET,
@@ -34,12 +40,14 @@ const homeRouter = require('./routes/home');
 const ratingsRouter = require('./routes/ratings');
 const reviewsRouter = require('./routes/reviews');
 const mealPlannerRouter = require('./routes/mealPlanner');
+const profileRouter = require('./routes/profile');
 
 server.use('/', authRouter);
 server.use('/home', homeRouter);
 server.use('/ratings', ratingsRouter);
 server.use('/', reviewsRouter);
 server.use('/meal-planner', mealPlannerRouter);
+server.use('/profile', profileRouter);
 
 // Root redirect to login
 server.get('/', (req, res) => res.redirect('/login'));

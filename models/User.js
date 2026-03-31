@@ -30,3 +30,7 @@ exports.findUser = function(userid) {
 exports.findById = function(id) {
   return User.findById(id);
 };
+
+exports.findByIdAndUpdate = function(id, update) {
+  return User.findByIdAndUpdate(id, update, { new: true });
+};

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Profile — Kopitiam</title>
+</head>
+<body>
+
+  <h1>My Profile</h1>
+
+  <% if (success) { %>
+    <p style="color: green;"><%= success %></p>
+  <% } %>
+
+  <% if (failure) { %>
+    <p style="color: red;"><%= failure %></p>
+  <% } %>
+
+  <form method="POST" action="/profile">
+    <p>
+      <label for="userid"><strong>User ID:</strong></label><br />
+      <input type="text" id="userid" value="<%= user.userid %>" disabled />
+    </p>
+
+    <p>
+      <label for="username"><strong>Username:</strong></label><br />
+      <input type="text" id="username" name="username" value="<%= user.username %>" required />
+    </p>
+
+    <button type="submit">Save Changes</button>
+  </form>
+
+  <br />
+  <a href="/home">Back to Home</a>
+
+</body>
+</html>

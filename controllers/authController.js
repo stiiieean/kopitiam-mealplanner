@@ -39,6 +39,9 @@ exports.postRegister = async (req, res) => {
 
 // GET /login
 exports.getLogin = (req, res) => {
+  if (req.session.user) {
+    return res.redirect('/home');
+  }
   res.render('login', { failure: null });
 };
 
