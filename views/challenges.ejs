@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Challenges — Kopitiam</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: 'Segoe UI', sans-serif; background: #faf9f7; min-height: 100vh; }
+
+    .navbar {
+      background: #6b3f1f; color: white;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 32px;
+    }
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+    .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .navbar a:hover { text-decoration: underline; }
+
+    .container { max-width: 640px; margin: 40px auto; padding: 0 24px; }
+
+    .top-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px;
+    }
+
+    h1 { font-size: 1.5rem; color: #3b2008; }
+
+    .new-btn {
+      padding: 9px 18px; background: #6b3f1f; color: white;
+      border-radius: 8px; text-decoration: none;
+      font-size: 0.9rem; font-weight: 600;
+    }
+    .new-btn:hover { background: #3b2008; }
+
+    .challenge-card {
+      background: white; border: 1px solid #e0d9d0;
+      border-radius: 10px; padding: 20px 24px;
+      margin-bottom: 14px;
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 16px;
+    }
+
+    .challenge-card.done {
+      border-color: #a5d6a7;
+      background: #f9fdf9;
+    }
+
+    .challenge-info { flex: 1; }
+
+    .challenge-title {
+      font-size: 1rem; font-weight: 700; color: #3b2008;
+      margin-bottom: 4px;
+    }
+
+    .challenge-desc {
+      font-size: 0.85rem; color: #666; margin-bottom: 12px; line-height: 1.5;
+    }
+
+    .milestone-badge {
+      display: inline-block;
+      font-size: 0.78rem; font-weight: 600;
+      padding: 3px 12px; border-radius: 20px;
+      border: 1px solid;
+    }
+
+    .milestone-badge.completed {
+      background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7;
+    }
+
+    .milestone-badge.pending {
+      background: #faf9f7; color: #aaa; border-color: #e0d9d0;
+    }
+
+    .actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+    .complete-btn {
+      padding: 7px 16px; background: #6b3f1f; color: white;
+      border: none; border-radius: 6px;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      white-space: nowrap;
+    }
+    .complete-btn:hover { background: #3b2008; }
+
+    .undo-btn {
+      padding: 7px 16px; background: white; color: #6b3f1f;
+      border: 1px solid #e0d9d0; border-radius: 6px;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      white-space: nowrap;
+    }
+    .undo-btn:hover { background: #f0e9df; }
+
+    .admin-actions { display: flex; gap: 6px; }
+
+    .edit-btn {
+      padding: 5px 12px; background: white; color: #6b3f1f;
+      border: 1px solid #e0d9d0; border-radius: 6px;
+      text-decoration: none; font-size: 0.78rem; font-weight: 600;
+    }
+    .edit-btn:hover { background: #f0e9df; }
+
+    .delete-btn {
+      padding: 5px 12px; background: white; color: #c0392b;
+      border: 1px solid #f5c6c2; border-radius: 6px;
+      font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    }
+    .delete-btn:hover { background: #fdf0ef; }
+
+    .empty { color: #aaa; font-size: 0.9rem; text-align: center; padding: 48px 0; }
+
+    .completion-count { font-size: 0.76rem; color: #aaa; margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/home">← Back to Home</a>
+  </nav>
+
+  <div class="container">
+    <div class="top-row">
+      <h1>Challenges</h1>
+      <% if (sessionUser.role === 'admin') { %>
+        <a href="/challenges/new" class="new-btn">+ New Challenge</a>
+      <% } %>
+    </div>
+
+    <% if (challenges.length === 0) { %>
+      <p class="empty">No challenges yet.<% if (sessionUser.role === 'admin') { %> Create one to get started!<% } %></p>
+    <% } %>
+
+    <% challenges.forEach(function(challenge) {
+      const userId = sessionUser._id.toString();
+      const myEntry = challenge.completedBy.find(c => c.userId.toString() === userId);
+      const isDone  = !!myEntry;
+    %>
+      <div class="challenge-card <%= isDone ? 'done' : '' %>">
+
+        <div class="challenge-info">
+          <div class="challenge-title"><%= challenge.title %></div>
+          <div class="challenge-desc"><%= challenge.description %></div>
+
+          <% if (isDone) { %>
+            <span class="milestone-badge completed">
+              ✓ Completed · <%= new Date(myEntry.completedAt).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+            </span>
+          <% } else { %>
+            <span class="milestone-badge pending">Not completed yet</span>
+          <% } %>
+
+          <% if (sessionUser.role === 'admin') { %>
+            <div class="completion-count"><%= challenge.completedBy.length %> user<%= challenge.completedBy.length !== 1 ? 's' : '' %> completed</div>
+          <% } %>
+        </div>
+
+        <div class="actions">
+          <!-- User complete / undo buttons -->
+          <% if (!isDone) { %>
+            <form action="/challenges/<%= challenge._id %>/complete" method="POST">
+              <button type="submit" class="complete-btn">Mark Complete</button>
+            </form>
+          <% } else { %>
+            <form action="/challenges/<%= challenge._id %>/uncomplete" method="POST">
+              <button type="submit" class="undo-btn">Undo</button>
+            </form>
+          <% } %>
+
+          <!-- Admin edit / delete -->
+          <% if (sessionUser.role === 'admin') { %>
+            <div class="admin-actions">
+              <a href="/challenges/<%= challenge._id %>/edit" class="edit-btn">Edit</a>
+              <form action="/challenges/<%= challenge._id %>/delete" method="POST" style="display:inline;">
+                <button type="submit" class="delete-btn">Delete</button>
+              </form>
+            </div>
+          <% } %>
+        </div>
+
+      </div>
+    <% }) %>
+  </div>
+
+</body>
+</html>

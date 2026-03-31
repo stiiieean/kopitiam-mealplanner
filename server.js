@@ -43,6 +43,7 @@ const mealPlannerRouter = require('./routes/mealPlanner');
 const profileRouter = require('./routes/profile');
 const adminRouter = require('./routes/admin');
 const foodHuntRouter = require('./routes/foodHunt');
+const challengesRouter = require('./routes/challenges');
 
 server.use('/', authRouter);
 server.use('/home', homeRouter);
@@ -52,6 +53,7 @@ server.use('/meal-planner', mealPlannerRouter);
 server.use('/profile', profileRouter);
 server.use('/admin', adminRouter);
 server.use('/food-hunt', foodHuntRouter);
+server.use('/challenges', challengesRouter);
 
 // Root redirect to login
 server.get('/', (req, res) => res.redirect('/login'));

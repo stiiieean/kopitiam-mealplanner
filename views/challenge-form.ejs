@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= challenge ? 'Edit Challenge' : 'New Challenge' %> — Kopitiam</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: 'Segoe UI', sans-serif; background: #faf9f7; min-height: 100vh; }
+
+    .navbar {
+      background: #6b3f1f; color: white;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 32px;
+    }
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+    .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .navbar a:hover { text-decoration: underline; }
+
+    .container { max-width: 480px; margin: 48px auto; padding: 0 24px; }
+
+    .card {
+      background: white; border: 1px solid #e0d9d0;
+      border-radius: 12px; padding: 32px;
+    }
+
+    h1 { font-size: 1.3rem; color: #3b2008; margin-bottom: 24px; }
+
+    .error { color: #c0392b; font-size: 0.85rem; margin-bottom: 16px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 18px; }
+
+    label { font-size: 0.85rem; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
+
+    input[type="text"], textarea {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid #e0d9d0; border-radius: 8px;
+      font-size: 0.92rem; color: #3b2008;
+      background: #faf9f7; font-family: inherit;
+      outline: none; transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus { border-color: #6b3f1f; }
+    textarea { resize: vertical; }
+
+    .submit-btn {
+      width: 100%; padding: 11px;
+      background: #6b3f1f; color: white;
+      border: none; border-radius: 8px;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+    }
+    .submit-btn:hover { background: #3b2008; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/challenges">← Back to Challenges</a>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h1><%= challenge ? 'Edit Challenge' : 'New Challenge' %></h1>
+
+      <% if (error) { %><p class="error"><%= error %></p><% } %>
+
+      <form action="<%= challenge ? '/challenges/' + challenge._id + '/edit' : '/challenges/new' %>" method="POST">
+        <div class="form-group">
+          <div>
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title"
+              placeholder="e.g. Review Rookie"
+              value="<%= challenge ? challenge.title : '' %>">
+          </div>
+
+          <div>
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="3"
+              placeholder="e.g. Write your first store review"><%= challenge ? challenge.description : '' %></textarea>
+          </div>
+
+          <button type="submit" class="submit-btn"><%= challenge ? 'Save Changes' : 'Create Challenge' %></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>
