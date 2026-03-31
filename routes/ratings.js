@@ -2,11 +2,17 @@ const express = require('express');
 const router = express.Router();
 const ratingsController = require('../controllers/ratingsController');
 const reviewController = require('../controllers/ReviewController');
-const { requireLogin } = require('../middleware/auth');
+const storeController = require('../controllers/storeController');
+const { requireLogin, requireAdmin } = require('../middleware/auth');
+
+// /new must be registered before /:storeId to avoid Express treating "new" as a storeId
+router.get('/new', requireLogin, storeController.getNewStore);
+router.post('/new', requireLogin, storeController.postNewStore);
 
 router.get('/', requireLogin, ratingsController.getAllStores);
 router.get('/:storeId', requireLogin, ratingsController.getStoreById);
 router.get('/:storeId/review/new', requireLogin, reviewController.getNewReview);
 router.post('/:storeId/review/new', requireLogin, reviewController.postNewReview);
+router.post('/:storeId/delete', requireLogin, requireAdmin, storeController.deleteStore);
 
 module.exports = router;

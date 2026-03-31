@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title><%= store.name %> — Kopitiam</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -171,6 +173,31 @@
       font-size: 0.9rem;
       color: #888;
     }
+
+    #store-map {
+      height: 220px;
+      border-radius: 8px;
+      border: 1px solid #e0d9d0;
+      margin-bottom: 14px;
+    }
+
+    .gmaps-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #6b3f1f;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .gmaps-btn:hover { background: #3b2008; }
+
+    .no-coords {
+      font-size: 0.88rem;
+      color: #aaa;
+    }
   </style>
 </head>
 <body>
@@ -184,15 +211,24 @@
 
     <!-- Store Info -->
     <div class="section">
-      <h1><%= store.name %></h1>
-      <div class="meta">
-        <span>📍 <%= store.location %></span>
-        <span>💵 $<%= store.budget %> avg/pax</span>
-      </div>
-      <div class="tags">
-        <% store.tags.forEach(function(tag) { %>
-          <span class="tag"><%= tag %></span>
-        <% }) %>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+        <div>
+          <h1><%= store.name %></h1>
+          <div class="meta">
+            <span>📍 <%= store.location %></span>
+            <span>💵 $<%= store.budget %> avg/pax</span>
+          </div>
+          <div class="tags">
+            <% store.tags.forEach(function(tag) { %>
+              <span class="tag"><%= tag %></span>
+            <% }) %>
+          </div>
+        </div>
+        <% if (sessionUser && sessionUser.role === 'admin') { %>
+          <form action="/ratings/<%= store._id %>/delete" method="POST" style="flex-shrink: 0;">
+            <button type="submit" class="delete-btn">Delete Store</button>
+          </form>
+        <% } %>
       </div>
     </div>
 
@@ -207,6 +243,31 @@
         </ul>
       <% } else { %>
         <p class="no-result">No menu items listed.</p>
+      <% } %>
+    </div>
+
+    <!-- How to Get There -->
+    <div class="section">
+      <h2>How to Get There</h2>
+
+      <% if (store.lat && store.lng) { %>
+        <div id="store-map"></div>
+        <a
+          href="https://www.google.com/maps/dir/?api=1&destination=<%= store.lat %>,<%= store.lng %>"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="gmaps-btn">
+          Open in Google Maps
+        </a>
+      <% } else { %>
+        <a
+          href="https://www.google.com/maps/search/?api=1&query=<%= encodeURIComponent(store.location) %>"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="gmaps-btn">
+          Open in Google Maps
+        </a>
+        <p class="no-coords" style="margin-top: 10px;">No map preview — this store was added before location pinning was available.</p>
       <% } %>
     </div>
 
@@ -242,6 +303,24 @@
     </div>
 
   </div>
+
+  <!-- Leaflet JS — only loaded when coordinates exist -->
+  <% if (store.lat && store.lng) { %>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      const map = L.map('store-map', { zoomControl: true, scrollWheelZoom: false })
+                   .setView([<%= store.lat %>, <%= store.lng %>], 16);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      L.marker([<%= store.lat %>, <%= store.lng %>])
+        .addTo(map)
+        .bindPopup('<strong><%= store.name %></strong><br><%= store.location %>')
+        .openPopup();
+    </script>
+  <% } %>
 
 </body>
 </html>

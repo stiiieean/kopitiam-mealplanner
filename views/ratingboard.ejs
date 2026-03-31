@@ -96,18 +96,31 @@
       gap: 16px;
     }
 
-    .store-card {
+    .store-card-wrapper {
       background: white;
       border: 1px solid #e0d9d0;
       border-radius: 10px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      transition: background 0.15s;
+    }
+
+    .store-card-wrapper:hover { background: #f0e9df; }
+
+    .store-card {
+      flex: 1;
       padding: 20px 24px;
       text-decoration: none;
       color: inherit;
       display: block;
-      transition: background 0.15s;
     }
 
-    .store-card:hover { background: #f0e9df; }
+    .store-card-actions {
+      padding: 16px 16px 0 0;
+      flex-shrink: 0;
+    }
 
     .store-card h2 {
       font-size: 1.1rem;
@@ -146,6 +159,20 @@
       margin-top: 8px;
     }
 
+    .delete-store-btn {
+      padding: 6px 12px;
+      background: white;
+      color: #c0392b;
+      border: 1px solid #f5c6c2;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .delete-store-btn:hover { background: #fdf0ef; }
+
     .no-result {
       color: #888;
       font-size: 0.95rem;
@@ -160,7 +187,12 @@
   </nav>
 
   <div class="container">
-    <h1>Ratings Board</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h1 style="margin-bottom: 0;">Ratings Board</h1>
+      <% if (sessionUser) { %>
+        <a href="/ratings/new" style="padding: 9px 18px; background: #6b3f1f; color: white; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 600;">+ Add Store</a>
+      <% } %>
+    </div>
 
     <form method="GET" action="/ratings" class="filter-bar">
       <label for="maxBudget">Max Budget (SGD):</label>
@@ -182,25 +214,34 @@
     <% } else { %>
       <div class="store-list">
         <% stores.forEach(function(store) { %>
-          <a href="/ratings/<%= store._id %>" class="store-card">
-            <h2><%= store.name %></h2>
-            <div class="meta">
-              <span>📍 <%= store.location %></span>
-              <span>💵 $<%= store.budget %> avg/pax</span>
-            </div>
-            <div class="tags">
-              <% store.tags.forEach(function(tag) { %>
-                <span class="tag"><%= tag %></span>
-              <% }) %>
-            </div>
-            <p class="rating-badge">
-              <% if (store.avgRating) { %>
-                ★ <%= store.avgRating %> / 5 &nbsp;·&nbsp; <%= store.reviews.length %> review<%= store.reviews.length !== 1 ? "s" : "" %>
-              <% } else { %>
-                No reviews yet
-              <% } %>
-            </p>
-          </a>
+          <div class="store-card-wrapper">
+            <a href="/ratings/<%= store._id %>" class="store-card">
+              <h2><%= store.name %></h2>
+              <div class="meta">
+                <span>📍 <%= store.location %></span>
+                <span>💵 $<%= store.budget %> avg/pax</span>
+              </div>
+              <div class="tags">
+                <% store.tags.forEach(function(tag) { %>
+                  <span class="tag"><%= tag %></span>
+                <% }) %>
+              </div>
+              <p class="rating-badge">
+                <% if (store.avgRating) { %>
+                  ★ <%= store.avgRating %> / 5 &nbsp;·&nbsp; <%= store.reviews.length %> review<%= store.reviews.length !== 1 ? "s" : "" %>
+                <% } else { %>
+                  No reviews yet
+                <% } %>
+              </p>
+            </a>
+            <% if (sessionUser && sessionUser.role === 'admin') { %>
+              <div class="store-card-actions">
+                <form action="/ratings/<%= store._id %>/delete" method="POST">
+                  <button type="submit" class="delete-store-btn">Delete</button>
+                </form>
+              </div>
+            <% } %>
+          </div>
         <% }) %>
       </div>
     <% } %>

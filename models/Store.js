@@ -4,6 +4,8 @@ const storeSchema = new mongoose.Schema({
   name:     { type: String, required: [true, 'A store must have a name'] },
   location: { type: String, required: [true, 'A store must have a location'] },
   budget:   { type: Number, required: [true, 'A store must have a budget'] },
+  lat:      { type: Number },
+  lng:      { type: Number },
   food:     [String],
   tags:     [String],
   reviews:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
@@ -27,4 +29,14 @@ exports.retrieveById = function(id) {
 // Retrieve all stores without populating (for dropdowns)
 exports.find = function(filter) {
   return StoreModel.find(filter || {});
+};
+
+// Create a new store
+exports.createStore = function(data) {
+  return StoreModel.create(data);
+};
+
+// Delete a store by ID
+exports.deleteStore = function(id) {
+  return StoreModel.findByIdAndDelete(id);
 };

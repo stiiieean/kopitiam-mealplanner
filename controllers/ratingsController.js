@@ -28,7 +28,7 @@ exports.getAllStores = async (req, res) => {
       };
     });
 
-    res.render('ratingboard', { stores: storesWithRating, maxBudget });
+    res.render('ratingboard', { stores: storesWithRating, maxBudget, sessionUser: req.session.user || null });
 
   } catch (error) {
     console.error(error);
@@ -52,6 +52,8 @@ exports.getStoreById = async (req, res) => {
         name: store.name,
         location: store.location,
         budget: store.budget,
+        lat: store.lat || null,
+        lng: store.lng || null,
         tags: store.tags,
         food: store.food,
         reviews: store.reviews,

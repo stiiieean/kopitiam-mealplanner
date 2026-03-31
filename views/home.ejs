@@ -25,37 +25,23 @@
       padding: 14px 32px;
     }
 
-    .navbar .brand {
-      font-size: 1.2rem;
-      font-weight: 700;
-    }
-
-    .navbar a {
-      color: white;
-      text-decoration: none;
-      font-size: 0.9rem;
-    }
-
-    .navbar a:hover {
-      text-decoration: underline;
-    }
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+    .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .navbar a:hover { text-decoration: underline; }
 
     .container {
-      max-width: 600px;
+      max-width: 1100px;
       margin: 60px auto;
-      padding: 0 24px;
+      padding: 0 32px;
     }
 
-    .greeting {
-      font-size: 1.5rem;
-      color: #3b2008;
-      margin-bottom: 8px;
-    }
+    .greeting { font-size: 1.5rem; color: #3b2008; margin-bottom: 8px; }
+    .subtitle { color: #888; margin-bottom: 40px; font-size: 0.95rem; }
 
-    .subtitle {
-      color: #888;
-      margin-bottom: 40px;
-      font-size: 0.95rem;
+    /* Dashboard menu — kept narrow and centered */
+    .menu-wrap {
+      max-width: 560px;
+      margin: 0 auto 56px auto;
     }
 
     .menu {
@@ -79,13 +65,81 @@
       transition: background 0.15s;
     }
 
-    .menu a:hover {
-      background: #f0e9df;
+    .menu a:hover { background: #f0e9df; }
+    .menu a span.arrow { color: #bbb; font-size: 1.1rem; }
+
+    /* Two-column rec grid */
+    .rec-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
     }
 
-    .menu a span.arrow {
-      color: #bbb;
-      font-size: 1.1rem;
+    .section-title {
+      font-size: 1.05rem;
+      color: #3b2008;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .section-subtitle {
+      font-size: 0.82rem;
+      color: #aaa;
+      margin-bottom: 14px;
+    }
+
+    .rec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rec-card {
+      background: white;
+      border: 1px solid #e0d9d0;
+      border-radius: 10px;
+      padding: 14px 18px;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: background 0.15s;
+    }
+
+    .rec-card:hover { background: #f0e9df; }
+
+    .rec-reason {
+      font-size: 0.75rem;
+      color: #6b3f1f;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .rec-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #3b2008;
+      margin-bottom: 4px;
+    }
+
+    .rec-meta {
+      font-size: 0.8rem;
+      color: #888;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .rec-distance {
+      font-size: 0.8rem;
+      color: #6b3f1f;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .rec-status {
+      font-size: 0.85rem;
+      color: #aaa;
     }
   </style>
 </head>
@@ -97,36 +151,156 @@
   </nav>
 
   <div class="container">
-    <h1 class="greeting">
-      <% if (user) { %>
-        Hello, <%= user.username %>
-      <% } else { %>
-        Hello!
-      <% } %>
-    </h1>
-    <p class="subtitle">What would you like to do today?</p>
+    <div class="menu-wrap">
+      <h1 class="greeting">
+        <% if (user) { %>
+          Hello, <%= user.username %>
+        <% } else { %>
+          Hello!
+        <% } %>
+      </h1>
+      <p class="subtitle">What would you like to do today?</p>
 
-    <div class="menu">
-      <a href="/ratings">
-        Ratings Board
-        <span class="arrow">›</span>
-      </a>
-      <a href="/meal-planner">
-        Meal Planner
-        <span class="arrow">›</span>
-      </a>
-      <a href="/profile">
-        My Profile
-        <span class="arrow">›</span>
-      </a>
-      <% if (user && user.role === 'admin') { %>
-      <a href="/admin">
-        Admin Dashboard
-        <span class="arrow">›</span>
-      </a>
-      <% } %>
+      <div class="menu">
+        <a href="/ratings">
+          Ratings Board
+          <span class="arrow">›</span>
+        </a>
+        <a href="/meal-planner">
+          Meal Planner
+          <span class="arrow">›</span>
+        </a>
+        <a href="/profile">
+          My Profile
+          <span class="arrow">›</span>
+        </a>
+        <% if (user && user.role === 'admin') { %>
+        <a href="/admin">
+          Admin Dashboard
+          <span class="arrow">›</span>
+        </a>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Two-column recommendations -->
+    <div class="rec-grid">
+
+      <!-- Left: Recommended for You -->
+      <div>
+        <p class="section-title">Recommended for You</p>
+        <p class="section-subtitle">Based on your past reviews</p>
+
+        <% if (recommended && recommended.length > 0) { %>
+          <div class="rec-list">
+            <% recommended.forEach(store => { %>
+              <a href="/ratings/<%= store._id %>" class="rec-card">
+                <p class="rec-reason"><%= store.reason %></p>
+                <div class="rec-name"><%= store.name %></div>
+                <div class="rec-meta">
+                  <span>📍 <%= store.location.split(',')[0] %></span>
+                  <span>💵 $<%= store.budget %> avg/pax</span>
+                </div>
+              </a>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <p class="rec-status">No recommendations yet. Start reviewing stores to get personalised suggestions!</p>
+        <% } %>
+      </div>
+
+      <!-- Right: Nearby Recommendations -->
+      <div>
+        <p class="section-title">Nearby Recommendations</p>
+        <p class="section-subtitle">Based on your current location</p>
+
+        <p class="rec-status" id="rec-status">Detecting your location...</p>
+        <div class="rec-list" id="rec-list"></div>
+      </div>
+
     </div>
   </div>
+
+  <script>
+    const stores = <%- JSON.stringify(stores) %>;
+
+    function haversineDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function showRecommendations(userLat, userLng) {
+      const statusEl = document.getElementById('rec-status');
+      const listEl = document.getElementById('rec-list');
+
+      if (stores.length === 0) {
+        statusEl.textContent = 'No stores with location data available yet.';
+        return;
+      }
+
+      const MAX_DISTANCE_KM = 5;
+
+      const sorted = stores.map(store => {
+        const dist = haversineDistance(userLat, userLng, store.lat, store.lng);
+        return { ...store, distance: dist };
+      });
+
+      sorted.sort((a, b) => a.distance - b.distance);
+
+      const top3 = sorted.filter(s => s.distance <= MAX_DISTANCE_KM).slice(0, 3);
+
+      if (top3.length === 0) {
+        statusEl.textContent = 'No stores found within 5 km of your location.';
+        return;
+      }
+
+      statusEl.style.display = 'none';
+
+      top3.forEach(store => {
+        const distText = store.distance < 1
+          ? (store.distance * 1000).toFixed(0) + ' m away'
+          : store.distance.toFixed(1) + ' km away';
+
+        const tagsText = store.tags && store.tags.length > 0
+          ? store.tags.slice(0, 3).join(' · ')
+          : '';
+
+        const card = document.createElement('a');
+        card.href = '/ratings/' + store._id;
+        card.className = 'rec-card';
+        card.innerHTML = `
+          <div class="rec-name">${store.name}</div>
+          <div class="rec-meta">
+            <span>📍 ${store.location.split(',')[0]}</span>
+            <span>💵 $${store.budget} avg/pax</span>
+            ${tagsText ? `<span>${tagsText}</span>` : ''}
+          </div>
+          <div class="rec-distance">${distText}</div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          showRecommendations(position.coords.latitude, position.coords.longitude);
+        },
+        function() {
+          document.getElementById('rec-status').textContent =
+            'Location access denied. Enable location to see nearby recommendations.';
+        }
+      );
+    } else {
+      document.getElementById('rec-status').textContent =
+        'Geolocation is not supported by your browser.';
+    }
+  </script>
 
 </body>
 </html>
