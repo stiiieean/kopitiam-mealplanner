@@ -9,7 +9,10 @@
       "Bash(python -c \"import pymupdf; print\\(''''pymupdf ok''''\\)\")",
       "Bash(pip list:*)",
       "Bash(pip install:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Read(//c/Users/komin/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/1952ef93-c7c3-4ae6-8766-47a1647ec103/d15dbe92-afd4-4f5b-bee5-f5151377d1be/skills/docx/**)",
+      "Bash(node -e \"console.log\\(''docx available:'', require\\(''fs''\\).existsSync\\(''node_modules/docx''\\)\\)\")",
+      "Bash(node generate_spec.js)"
     ]
   }
 }
