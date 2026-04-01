@@ -378,6 +378,30 @@ Relevant files:
 - **MongoDB update operators**: `$addToSet` and `$push` for likes/replies.
 - **Leaflet + Nominatim**: map + geocoding on the client (browser) side.
 
+### Multer (`multer` npm module) — only in this CRUD set
+
+**Where it appears:** Forum **CRUD Set 2** is the only feature that uses Multer. It is listed in `package.json` as a dependency and imported in `middleware/upload.js`:
+
+```js
+const multer = require('multer');
+// ... diskStorage + fileFilter + limits, then:
+module.exports = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
+```
+
+Routes import that configured instance as `upload` and attach it to POSTs that accept a file, e.g. `upload.single('photo')` in `routes/forum.js` for new post, edit post, and reply.
+
+**Why Multer is needed:** Forms with `<input type="file">` use **`multipart/form-data`**. Express’s **`express.urlencoded()`** only parses typical text form bodies; it does **not** parse multipart streams or write binary files to disk. **Multer** is middleware that understands multipart requests, optionally validates type/size, saves the file (here via **disk storage** to `public/uploads/forum/`), and sets **`req.file`** so the controller can use `req.file.filename` without handling raw upload bytes manually.
+
+**How it interacts with Node, Express, and Mongoose/MongoDB:**
+
+| Layer | Role |
+|--------|------|
+| **Node.js** | Incoming request is a stream; Multer (using Node’s filesystem APIs under the hood) writes uploaded image bytes to disk when using `diskStorage`. |
+| **Express** | Multer runs as **middleware** in the chain **before** your controller: `router.post('/new', upload.single('photo'), forumController.createPost)`. After Multer, `req.body` still has text fields and `req.file` describes the saved file. |
+| **Mongoose / MongoDB** | The app does **not** store image binaries in MongoDB. The controller passes **`req.file ? req.file.filename : null`** into `Forum.createPost` / `updatePost` / `addReply`. Mongoose persists that **string** on the `Forum` document (or in a reply subdocument). **Mongoose has no special upload API** — it only saves the fields you give it. Images are served separately via **`express.static('public')`** using the stored filename in URLs like `/uploads/forum/<filename>`. |
+
+**One-line summary:** Multer connects **multipart HTTP uploads** to **files on disk** and **`req.file`**; Mongoose stores only the **filename reference** in the database.
+
 ### Routes (Read/Create/Update/Delete)
 
 - **Read (list posts)**: `GET /forum` → `forumController.listPosts`
