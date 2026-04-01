@@ -19,7 +19,19 @@
       "Bash(node --check controllers/forumController.js)",
       "Bash(node --check routes/forum.js)",
       "Bash(node --check models/Forum.js)",
-      "Bash(node --check middleware/upload.js)"
+      "Bash(node --check middleware/upload.js)",
+      "Bash(find /c/Users/komin/Documents/GitHub/kopitiam-mealplanner -name *.pdf -o -name *.pptx -o -name *.docx)",
+      "Bash(for w:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/komin/Desktop/SMU/Y1 Term 2 \\(2025\\)/IS113 - Web Application/**)",
+      "Bash(done)",
+      "Bash(cd /c/Users/komin/Desktop/SMU/Y1 Term 2 \\\\\\(2025\\\\\\)/IS113 - Web Application)",
+      "Bash(python3 -c \":*)",
+      "Bash(py --version)",
+      "Bash(node -e \"require\\(''docx''\\); console.log\\(''docx ok''\\)\")",
+      "Bash(node -e \"require\\(''docx''\\); console.log\\(''ok''\\)\")",
+      "Bash(node -e \"const m = require\\(require\\(''path''\\).join\\(require\\(''os''\\).homedir\\(\\), ''AppData/Roaming/npm/node_modules/docx''\\)\\); console.log\\(''ok global''\\)\")",
+      "Bash(node create_doc.js)"
     ]
   }
 }
