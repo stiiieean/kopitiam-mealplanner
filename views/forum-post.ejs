@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= post.title %> — Kopitiam Forum</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #faf9f7; min-height: 100vh; }
+
+    .navbar {
+      background: #6b3f1f; color: white;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 32px;
+    }
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+    .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .navbar a:hover { text-decoration: underline; }
+
+    .container { max-width: 720px; margin: 40px auto; padding: 0 24px; }
+
+    /* ── Original post ── */
+    .post-card {
+      background: white; border: 1px solid #e0d9d0;
+      border-radius: 10px; padding: 28px 32px; margin-bottom: 28px;
+    }
+    .post-title { font-size: 1.4rem; font-weight: 700; color: #3b2008; margin-bottom: 8px; }
+    .post-meta {
+      font-size: 0.8rem; color: #aaa;
+      display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .post-photo {
+      width: 100%; max-height: 400px; object-fit: cover;
+      border-radius: 8px; margin-bottom: 16px;
+    }
+    .post-content {
+      font-size: 0.95rem; color: #444; line-height: 1.7;
+      white-space: pre-wrap; margin-bottom: 20px;
+    }
+
+    /* ── Location ── */
+    .location-badge {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 0.82rem; color: #6b3f1f; margin-bottom: 16px;
+      background: #f8f3ee; border: 1px solid #e0d9d0;
+      border-radius: 8px; padding: 8px 12px;
+    }
+    #post-map {
+      width: 100%; height: 220px; border-radius: 8px;
+      border: 1px solid #e0d9d0; margin-bottom: 16px;
+    }
+
+    /* ── Post actions ── */
+    .post-actions {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding-top: 16px; border-top: 1px solid #f0e9df;
+    }
+    .like-btn {
+      padding: 7px 16px; background: white; border: 1px solid #e0d9d0;
+      border-radius: 8px; color: #6b3f1f; font-size: 0.88rem;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .like-btn:hover { background: #f0e9df; }
+    .liked-badge { font-size: 0.88rem; color: #6b3f1f; font-weight: 600; }
+    .edit-btn {
+      padding: 7px 16px; background: white; border: 1px solid #e0d9d0;
+      border-radius: 8px; color: #6b3f1f; font-size: 0.88rem;
+      font-weight: 600; text-decoration: none;
+    }
+    .edit-btn:hover { background: #f0e9df; }
+
+    /* ── Thread ── */
+    .thread-section { margin-bottom: 28px; }
+    .thread-title { font-size: 1rem; font-weight: 700; color: #3b2008; margin-bottom: 14px; }
+
+    .reply-card {
+      background: white; border: 1px solid #e0d9d0;
+      border-radius: 10px; padding: 16px 20px; margin-bottom: 10px;
+    }
+    .reply-meta {
+      font-size: 0.78rem; color: #aaa;
+      display: flex; gap: 12px; margin-bottom: 8px;
+    }
+    .reply-meta .author { color: #6b3f1f; font-weight: 600; }
+    .reply-content { font-size: 0.9rem; color: #444; line-height: 1.6; white-space: pre-wrap; }
+    .reply-photo {
+      margin-top: 10px; max-width: 100%; max-height: 240px;
+      object-fit: cover; border-radius: 8px; display: block;
+    }
+
+    .no-replies { font-size: 0.88rem; color: #aaa; margin-bottom: 16px; }
+
+    /* ── Add to Thread form ── */
+    .reply-form-card {
+      background: white; border: 1px solid #e0d9d0;
+      border-radius: 10px; padding: 20px 24px;
+    }
+    .reply-form-title { font-size: 0.95rem; font-weight: 700; color: #3b2008; margin-bottom: 12px; }
+
+    textarea {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid #e0d9d0; border-radius: 8px;
+      font-family: inherit; font-size: 0.9rem;
+      background: #faf9f7; resize: vertical; min-height: 90px; margin-bottom: 12px;
+    }
+    textarea:focus { outline: none; border-color: #6b3f1f; }
+
+    .photo-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border: 1px dashed #e0d9d0;
+      border-radius: 8px; cursor: pointer; color: #6b3f1f;
+      font-size: 0.82rem; font-weight: 600; margin-bottom: 12px;
+    }
+    .photo-label:hover { background: #f0e9df; }
+    input[type="file"] { display: none; }
+    #reply-preview {
+      max-width: 100%; max-height: 160px; object-fit: cover;
+      border-radius: 8px; margin-bottom: 12px; display: none; display: block;
+    }
+
+    .reply-submit-btn {
+      padding: 9px 20px; background: #6b3f1f; color: white;
+      border: none; border-radius: 8px; font-size: 0.9rem;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .reply-submit-btn:hover { background: #3b2008; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/forum">← Back to Forum</a>
+  </nav>
+
+  <div class="container">
+
+    <!-- ── Original post ── -->
+    <div class="post-card">
+      <h1 class="post-title"><%= post.title %></h1>
+      <div class="post-meta">
+        <span>By <strong><%= post.userId?.username || 'Unknown' %></strong></span>
+        <span><%= new Date(post.createdAt).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
+        <% const likesArr = Array.isArray(post.likes) ? post.likes : []; %>
+        <span>♥ <%= likesArr.length %> likes</span>
+      </div>
+
+      <!-- Post photo -->
+      <% if (post.photo) { %>
+        <img src="/uploads/forum/<%= post.photo %>" alt="Post photo" class="post-photo">
+      <% } %>
+
+      <div class="post-content"><%= post.content %></div>
+
+      <!-- Location badge + mini-map -->
+      <% if (post.location && post.location.address) { %>
+        <div class="location-badge">
+          <span>📍</span>
+          <span><%= post.location.address %></span>
+        </div>
+        <% if (post.location.lat && post.location.lng) { %>
+          <div id="post-map"></div>
+        <% } %>
+      <% } %>
+
+      <!-- Actions -->
+      <div class="post-actions">
+        <% const hasLiked = likesArr.some(id => id.toString() === sessionUser._id.toString()); %>
+        <% if (!hasLiked) { %>
+          <form action="/forum/<%= post._id %>/like" method="POST">
+            <input type="hidden" name="redirectTo" value="/forum/<%= post._id %>">
+            <button type="submit" class="like-btn">♥ Like</button>
+          </form>
+        <% } else { %>
+          <span class="liked-badge">♥ Liked</span>
+        <% } %>
+
+        <% const isOwner = post.userId?._id?.toString() === sessionUser._id.toString(); %>
+        <% if (isOwner || sessionUser.role === 'admin') { %>
+          <a href="/forum/<%= post._id %>/edit" class="edit-btn">Edit Post</a>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- ── Thread replies ── -->
+    <div class="thread-section">
+      <p class="thread-title">
+        Thread · <%= post.replies.length %> <%= post.replies.length === 1 ? 'reply' : 'replies' %>
+      </p>
+
+      <% if (post.replies.length === 0) { %>
+        <p class="no-replies">No replies yet. Be the first to add to this thread!</p>
+      <% } %>
+
+      <% post.replies.forEach(function(reply) { %>
+        <div class="reply-card">
+          <div class="reply-meta">
+            <span class="author"><%= reply.userId?.username || 'Unknown' %></span>
+            <span><%= new Date(reply.createdAt).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
+          </div>
+          <div class="reply-content"><%= reply.content %></div>
+          <% if (reply.photo) { %>
+            <img src="/uploads/forum/<%= reply.photo %>" alt="Reply photo" class="reply-photo">
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+
+    <!-- ── Add to Thread ── -->
+    <div class="reply-form-card">
+      <p class="reply-form-title">Add to Thread</p>
+      <!-- enctype multipart/form-data for photo upload (multer) -->
+      <form action="/forum/<%= post._id %>/reply" method="POST" enctype="multipart/form-data">
+        <textarea name="content" placeholder="Share your thoughts or experience..." required></textarea>
+
+        <label class="photo-label" for="reply-photo">📷 Attach a photo (optional)</label>
+        <input type="file" id="reply-photo" name="photo" accept="image/*">
+        <img id="reply-preview" src="" alt="Preview" style="display:none; max-width:100%; max-height:160px; border-radius:8px; margin-bottom:12px;">
+
+        <br>
+        <button type="submit" class="reply-submit-btn">Post Reply</button>
+      </form>
+    </div>
+
+  </div>
+
+  <% if (post.location && post.location.lat && post.location.lng) { %>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('post-map').setView([<%= post.location.lat %>, <%= post.location.lng %>], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    L.marker([<%= post.location.lat %>, <%= post.location.lng %>])
+      .addTo(map)
+      .bindPopup('<%= post.location.address.replace(/'/g, "&#39;") %>')
+      .openPopup();
+    // Disable scroll zoom so page scrolling isn't blocked
+    map.scrollWheelZoom.disable();
+  </script>
+  <% } %>
+
+  <script>
+    // Reply photo preview
+    document.getElementById('reply-photo').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.getElementById('reply-preview');
+        img.src = e.target.result;
+        img.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+  </script>
+</body>
+</html>

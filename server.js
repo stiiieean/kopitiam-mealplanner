@@ -44,6 +44,7 @@ const profileRouter = require('./routes/profile');
 const adminRouter = require('./routes/admin');
 const foodHuntRouter = require('./routes/foodHunt');
 const challengesRouter = require('./routes/challenges');
+const forumRouter = require('./routes/forum');
 
 server.use('/', authRouter);
 server.use('/home', homeRouter);
@@ -54,6 +55,7 @@ server.use('/profile', profileRouter);
 server.use('/admin', adminRouter);
 server.use('/food-hunt', foodHuntRouter);
 server.use('/challenges', challengesRouter);
+server.use('/forum', forumRouter);
 
 // Root redirect to login
 server.get('/', (req, res) => res.redirect('/login'));

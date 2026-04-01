@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>New Post — Kopitiam Forum</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #faf9f7; min-height: 100vh; }
+
+    .navbar {
+      background: #6b3f1f; color: white;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 32px;
+    }
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+    .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .navbar a:hover { text-decoration: underline; }
+
+    .container { max-width: 680px; margin: 40px auto; padding: 0 24px; }
+    h1 { font-size: 1.5rem; color: #3b2008; margin-bottom: 24px; }
+
+    .form-card {
+      background: white; border: 1px solid #e0d9d0;
+      border-radius: 10px; padding: 28px 32px;
+    }
+
+    .field { margin-bottom: 20px; }
+
+    label {
+      display: block; font-size: 0.88rem; font-weight: 600;
+      color: #3b2008; margin-bottom: 6px;
+    }
+
+    .label-hint { font-weight: 400; color: #aaa; font-size: 0.8rem; }
+
+    input[type="text"], textarea {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid #e0d9d0; border-radius: 8px;
+      font-family: inherit; font-size: 0.95rem; background: #faf9f7;
+    }
+    input[type="text"]:focus, textarea:focus { outline: none; border-color: #6b3f1f; }
+    textarea { resize: vertical; min-height: 120px; }
+
+    /* ── Photo upload ── */
+    .photo-label {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border: 1px dashed #e0d9d0;
+      border-radius: 8px; cursor: pointer; color: #6b3f1f;
+      font-size: 0.88rem; font-weight: 600;
+    }
+    .photo-label:hover { background: #f0e9df; }
+    input[type="file"] { display: none; }
+    #photo-preview {
+      margin-top: 10px; display: none;
+      max-width: 100%; max-height: 200px;
+      border-radius: 8px; object-fit: cover;
+    }
+
+    /* ── Location ── */
+    .location-row {
+      display: flex; gap: 8px; margin-bottom: 10px;
+    }
+    .location-row input { flex: 1; }
+
+    .loc-btn {
+      padding: 9px 16px; border: 1px solid #e0d9d0;
+      border-radius: 8px; background: white; color: #6b3f1f;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      font-family: inherit; white-space: nowrap;
+    }
+    .loc-btn:hover { background: #f0e9df; }
+    .loc-btn.primary { background: #6b3f1f; color: white; border-color: #6b3f1f; }
+    .loc-btn.primary:hover { background: #3b2008; }
+
+    #map {
+      width: 100%; height: 260px;
+      border-radius: 8px; border: 1px solid #e0d9d0;
+      margin-top: 10px;
+    }
+    #loc-status { font-size: 0.78rem; color: #aaa; margin-top: 6px; }
+
+    .divider {
+      border: none; border-top: 1px solid #e0d9d0; margin: 20px 0;
+    }
+
+    .submit-btn {
+      padding: 10px 28px; background: #6b3f1f; color: white;
+      border: none; border-radius: 8px; font-size: 0.95rem;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .submit-btn:hover { background: #3b2008; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/forum">← Back to Forum</a>
+  </nav>
+
+  <div class="container">
+    <h1>New Post</h1>
+    <div class="form-card">
+      <!-- enctype must be multipart/form-data for file uploads (multer) -->
+      <form action="/forum/new" method="POST" enctype="multipart/form-data">
+
+        <!-- Title -->
+        <div class="field">
+          <label for="title">Title</label>
+          <input type="text" id="title" name="title" required placeholder="What place are you talking about?">
+        </div>
+
+        <!-- Content -->
+        <div class="field">
+          <label for="content">Content</label>
+          <textarea id="content" name="content" required placeholder="Share your food experience..."></textarea>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Photo upload -->
+        <div class="field">
+          <label>Photo <span class="label-hint">(optional — jpg, png, gif, webp — max 5 MB)</span></label>
+          <label class="photo-label" for="photo">
+            📷 Choose a photo
+          </label>
+          <input type="file" id="photo" name="photo" accept="image/*">
+          <img id="photo-preview" src="" alt="Preview">
+        </div>
+
+        <hr class="divider">
+
+        <!-- Location -->
+        <div class="field">
+          <label>Location <span class="label-hint">(optional — tag where this food is)</span></label>
+
+          <!-- Method 1: Use my current location -->
+          <div style="margin-bottom: 10px;">
+            <button type="button" class="loc-btn primary" id="geolocate-btn">📍 Use My Location</button>
+            <span id="loc-status"></span>
+          </div>
+
+          <!-- Method 2: Type an address and search -->
+          <div class="location-row">
+            <input type="text" id="address-input" placeholder="Type an address or place name...">
+            <button type="button" class="loc-btn" id="search-btn">Search</button>
+          </div>
+
+          <!-- Method 3: Click on the map to drop a pin -->
+          <p style="font-size:0.78rem; color:#aaa; margin-bottom: 6px;">Or click anywhere on the map to drop a pin.</p>
+          <div id="map"></div>
+
+          <!-- Hidden fields submitted with the form -->
+          <input type="hidden" id="address" name="address" value="">
+          <input type="hidden" id="lat"     name="lat"     value="">
+          <input type="hidden" id="lng"     name="lng"     value="">
+        </div>
+
+        <hr class="divider">
+
+        <button type="submit" class="submit-btn">Post</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // ── Photo preview ──────────────────────────────────────────
+    document.getElementById('photo').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.getElementById('photo-preview');
+        img.src = e.target.result;
+        img.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ── Leaflet map setup ───────────────────────────────────────
+    const DEFAULT_LAT = 1.3521;   // Singapore centre
+    const DEFAULT_LNG = 103.8198;
+
+    const map = L.map('map').setView([DEFAULT_LAT, DEFAULT_LNG], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = null;
+
+    function setPin(lat, lng, label) {
+      if (marker) map.removeLayer(marker);
+      marker = L.marker([lat, lng]).addTo(map);
+      if (label) marker.bindPopup(label).openPopup();
+      map.setView([lat, lng], 16);
+
+      // Write hidden fields
+      document.getElementById('lat').value = lat;
+      document.getElementById('lng').value = lng;
+      if (label) document.getElementById('address').value = label;
+    }
+
+    // Method 3: Click on map to drop a pin
+    map.on('click', function(e) {
+      const lat = e.latlng.lat.toFixed(6);
+      const lng = e.latlng.lng.toFixed(6);
+      // Reverse geocode the clicked point using Nominatim
+      fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          const addr = data.display_name || (lat + ', ' + lng);
+          setPin(lat, lng, addr);
+          document.getElementById('address-input').value = addr;
+          document.getElementById('loc-status').textContent = '';
+        })
+        .catch(function() {
+          setPin(lat, lng, lat + ', ' + lng);
+        });
+    });
+
+    // Method 1: Geolocation API
+    document.getElementById('geolocate-btn').addEventListener('click', function() {
+      const status = document.getElementById('loc-status');
+      if (!navigator.geolocation) {
+        status.textContent = 'Geolocation not supported by your browser.';
+        return;
+      }
+      status.textContent = 'Detecting location...';
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+              const addr = data.display_name || (lat + ', ' + lng);
+              setPin(lat, lng, addr);
+              document.getElementById('address-input').value = addr;
+              status.textContent = '';
+            })
+            .catch(function() {
+              setPin(lat, lng, lat + ', ' + lng);
+              status.textContent = '';
+            });
+        },
+        function() {
+          status.textContent = 'Location access denied. Please allow location or use the search.';
+        }
+      );
+    });
+
+    // Method 2: Address search via Nominatim (OpenStreetMap, no API key needed)
+    document.getElementById('search-btn').addEventListener('click', function() {
+      const query = document.getElementById('address-input').value.trim();
+      if (!query) return;
+      const status = document.getElementById('loc-status');
+      status.textContent = 'Searching...';
+      fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&limit=1')
+        .then(function(res) { return res.json(); })
+        .then(function(results) {
+          if (!results || results.length === 0) {
+            status.textContent = 'No results found. Try a different address.';
+            return;
+          }
+          const r = results[0];
+          setPin(parseFloat(r.lat), parseFloat(r.lon), r.display_name);
+          document.getElementById('address-input').value = r.display_name;
+          status.textContent = '';
+        })
+        .catch(function() {
+          status.textContent = 'Search failed. Check your connection and try again.';
+        });
+    });
+
+    // Allow pressing Enter in the address box to trigger search
+    document.getElementById('address-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('search-btn').click();
+      }
+    });
+  </script>
+</body>
+</html>

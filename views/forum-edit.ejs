@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Post — Kopitiam Forum</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #faf9f7; min-height: 100vh; }
+
+    .navbar {
+      background: #6b3f1f; color: white;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 32px;
+    }
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+    .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .navbar a:hover { text-decoration: underline; }
+
+    .container { max-width: 680px; margin: 40px auto; padding: 0 24px; }
+    h1 { font-size: 1.5rem; color: #3b2008; margin-bottom: 24px; }
+
+    .form-card {
+      background: white; border: 1px solid #e0d9d0;
+      border-radius: 10px; padding: 28px 32px;
+    }
+
+    .field { margin-bottom: 20px; }
+
+    label {
+      display: block; font-size: 0.88rem; font-weight: 600;
+      color: #3b2008; margin-bottom: 6px;
+    }
+    .label-hint { font-weight: 400; color: #aaa; font-size: 0.8rem; }
+
+    input[type="text"], textarea {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid #e0d9d0; border-radius: 8px;
+      font-family: inherit; font-size: 0.95rem; background: #faf9f7;
+    }
+    input[type="text"]:focus, textarea:focus { outline: none; border-color: #6b3f1f; }
+    textarea { resize: vertical; min-height: 120px; }
+
+    /* ── Current photo ── */
+    .current-photo {
+      max-width: 100%; max-height: 200px;
+      border-radius: 8px; object-fit: cover; margin-bottom: 10px;
+      display: block;
+    }
+    .photo-label {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border: 1px dashed #e0d9d0;
+      border-radius: 8px; cursor: pointer; color: #6b3f1f;
+      font-size: 0.88rem; font-weight: 600;
+    }
+    .photo-label:hover { background: #f0e9df; }
+    input[type="file"] { display: none; }
+    #photo-preview { max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: cover; margin-top: 10px; display: none; }
+
+    /* ── Location ── */
+    .location-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .location-row input { flex: 1; }
+
+    .loc-btn {
+      padding: 9px 16px; border: 1px solid #e0d9d0;
+      border-radius: 8px; background: white; color: #6b3f1f;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      font-family: inherit; white-space: nowrap;
+    }
+    .loc-btn:hover { background: #f0e9df; }
+    .loc-btn.primary { background: #6b3f1f; color: white; border-color: #6b3f1f; }
+    .loc-btn.primary:hover { background: #3b2008; }
+
+    #map { width: 100%; height: 260px; border-radius: 8px; border: 1px solid #e0d9d0; margin-top: 10px; }
+    #loc-status { font-size: 0.78rem; color: #aaa; margin-top: 6px; }
+
+    .divider { border: none; border-top: 1px solid #e0d9d0; margin: 20px 0; }
+
+    .btn-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 4px;
+    }
+    .save-btn {
+      padding: 10px 24px; background: #6b3f1f; color: white;
+      border: none; border-radius: 8px; font-size: 0.95rem;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .save-btn:hover { background: #3b2008; }
+    .delete-btn {
+      padding: 10px 20px; background: white; color: #c0392b;
+      border: 1px solid #f5c6c2; border-radius: 8px;
+      font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .delete-btn:hover { background: #fdf0ef; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/forum/<%= post._id %>">← Back to Post</a>
+  </nav>
+
+  <div class="container">
+    <h1>Edit Post</h1>
+    <div class="form-card">
+      <form action="/forum/<%= post._id %>/edit" method="POST" enctype="multipart/form-data">
+
+        <div class="field">
+          <label for="title">Title</label>
+          <input type="text" id="title" name="title" value="<%= post.title %>" required>
+        </div>
+
+        <div class="field">
+          <label for="content">Content</label>
+          <textarea id="content" name="content" required><%= post.content %></textarea>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Photo -->
+        <div class="field">
+          <label>Photo <span class="label-hint">(upload a new photo to replace the current one)</span></label>
+          <% if (post.photo) { %>
+            <img src="/uploads/forum/<%= post.photo %>" alt="Current photo" class="current-photo">
+          <% } %>
+          <label class="photo-label" for="photo">📷 <%= post.photo ? 'Replace photo' : 'Add a photo' %></label>
+          <input type="file" id="photo" name="photo" accept="image/*">
+          <img id="photo-preview" src="" alt="New preview">
+        </div>
+
+        <hr class="divider">
+
+        <!-- Location -->
+        <div class="field">
+          <label>Location <span class="label-hint">(update the tagged location)</span></label>
+          <div style="margin-bottom: 10px;">
+            <button type="button" class="loc-btn primary" id="geolocate-btn">📍 Use My Location</button>
+            <span id="loc-status"></span>
+          </div>
+          <div class="location-row">
+            <input type="text" id="address-input" placeholder="Type an address or place name..."
+              value="<%= post.location && post.location.address ? post.location.address : '' %>">
+            <button type="button" class="loc-btn" id="search-btn">Search</button>
+          </div>
+          <p style="font-size:0.78rem; color:#aaa; margin-bottom: 6px;">Or click anywhere on the map to drop a pin.</p>
+          <div id="map"></div>
+
+          <input type="hidden" id="address" name="address" value="<%= post.location && post.location.address ? post.location.address : '' %>">
+          <input type="hidden" id="lat"     name="lat"     value="<%= post.location && post.location.lat ? post.location.lat : '' %>">
+          <input type="hidden" id="lng"     name="lng"     value="<%= post.location && post.location.lng ? post.location.lng : '' %>">
+        </div>
+
+        <hr class="divider">
+
+        <div class="btn-row">
+          <button type="submit" class="save-btn">Save Changes</button>
+        </div>
+      </form>
+
+      <form action="/forum/<%= post._id %>/delete" method="POST" style="margin-top: 12px; text-align: right;">
+        <button type="submit" class="delete-btn"
+          onclick="return confirm('Delete this post?')">Delete Post</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // ── Photo preview ──────────────────────────────────────────
+    document.getElementById('photo').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.getElementById('photo-preview');
+        img.src = e.target.result;
+        img.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ── Leaflet map setup ──────────────────────────────────────
+    const existingLat = parseFloat('<%= post.location && post.location.lat ? post.location.lat : "" %>') || 1.3521;
+    const existingLng = parseFloat('<%= post.location && post.location.lng ? post.location.lng : "" %>') || 103.8198;
+    const hasLocation = !!(parseFloat('<%= post.location && post.location.lat ? post.location.lat : "" %>'));
+
+    const map = L.map('map').setView([existingLat, existingLng], hasLocation ? 16 : 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = hasLocation ? L.marker([existingLat, existingLng]).addTo(map) : null;
+
+    function setPin(lat, lng, label) {
+      if (marker) map.removeLayer(marker);
+      marker = L.marker([lat, lng]).addTo(map);
+      if (label) marker.bindPopup(label).openPopup();
+      map.setView([lat, lng], 16);
+      document.getElementById('lat').value = lat;
+      document.getElementById('lng').value = lng;
+      if (label) {
+        document.getElementById('address').value = label;
+        document.getElementById('address-input').value = label;
+      }
+    }
+
+    map.on('click', function(e) {
+      const lat = e.latlng.lat.toFixed(6);
+      const lng = e.latlng.lng.toFixed(6);
+      fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
+        .then(function(r) { return r.json(); })
+        .then(function(data) { setPin(lat, lng, data.display_name || (lat + ', ' + lng)); })
+        .catch(function() { setPin(lat, lng, lat + ', ' + lng); });
+    });
+
+    document.getElementById('geolocate-btn').addEventListener('click', function() {
+      const status = document.getElementById('loc-status');
+      if (!navigator.geolocation) { status.textContent = 'Not supported.'; return; }
+      status.textContent = 'Detecting...';
+      navigator.geolocation.getCurrentPosition(
+        function(p) {
+          fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + p.coords.latitude + '&lon=' + p.coords.longitude)
+            .then(function(r) { return r.json(); })
+            .then(function(data) { setPin(p.coords.latitude, p.coords.longitude, data.display_name); status.textContent = ''; })
+            .catch(function() { setPin(p.coords.latitude, p.coords.longitude, ''); status.textContent = ''; });
+        },
+        function() { status.textContent = 'Location denied.'; }
+      );
+    });
+
+    document.getElementById('search-btn').addEventListener('click', function() {
+      const q = document.getElementById('address-input').value.trim();
+      if (!q) return;
+      document.getElementById('loc-status').textContent = 'Searching...';
+      fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q) + '&limit=1')
+        .then(function(r) { return r.json(); })
+        .then(function(results) {
+          if (!results.length) { document.getElementById('loc-status').textContent = 'Not found.'; return; }
+          setPin(parseFloat(results[0].lat), parseFloat(results[0].lon), results[0].display_name);
+          document.getElementById('loc-status').textContent = '';
+        })
+        .catch(function() { document.getElementById('loc-status').textContent = 'Search failed.'; });
+    });
+
+    document.getElementById('address-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); document.getElementById('search-btn').click(); }
+    });
+  </script>
+</body>
+</html>

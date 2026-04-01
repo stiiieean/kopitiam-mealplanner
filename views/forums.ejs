@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Forum — Kopitiam</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: 'Segoe UI', sans-serif; background: #faf9f7; min-height: 100vh; }
+
+    .navbar {
+      background: #6b3f1f; color: white;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 32px;
+    }
+    .navbar .brand { font-size: 1.2rem; font-weight: 700; }
+    .navbar a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .navbar a:hover { text-decoration: underline; }
+
+    .container { max-width: 720px; margin: 40px auto; padding: 0 24px; }
+
+    .top-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px;
+    }
+
+    h1 { font-size: 1.5rem; color: #3b2008; }
+
+    .new-btn {
+      padding: 9px 18px; background: #6b3f1f; color: white;
+      border-radius: 8px; text-decoration: none;
+      font-size: 0.9rem; font-weight: 600;
+    }
+    .new-btn:hover { background: #3b2008; }
+
+    .post-card {
+      background: white; border: 1px solid #e0d9d0;
+      border-radius: 10px; padding: 20px 24px;
+      margin-bottom: 14px;
+    }
+
+    .post-title {
+      font-size: 1.05rem; font-weight: 700; color: #3b2008;
+      text-decoration: none; display: block; margin-bottom: 6px;
+    }
+    .post-title:hover { text-decoration: underline; }
+
+    .post-meta {
+      font-size: 0.8rem; color: #aaa;
+      display: flex; gap: 16px; align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .like-form { display: inline; }
+
+    .like-btn {
+      background: none; border: 1px solid #e0d9d0; border-radius: 6px;
+      padding: 3px 10px; font-size: 0.78rem; color: #6b3f1f;
+      cursor: pointer; font-family: inherit;
+    }
+    .like-btn:hover { background: #f0e9df; }
+
+    .empty { color: #aaa; font-size: 0.9rem; text-align: center; padding: 48px 0; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="brand">Kopitiam</span>
+    <a href="/home">← Back to Home</a>
+  </nav>
+
+  <div class="container">
+    <div class="top-row">
+      <h1>Forum</h1>
+      <a href="/forum/new" class="new-btn">+ New Post</a>
+    </div>
+
+    <% if (posts.length === 0) { %>
+      <p class="empty">No posts yet. Be the first to start a conversation!</p>
+    <% } %>
+
+    <% posts.forEach(function(post) { %>
+      <div class="post-card">
+        <a href="/forum/<%= post._id %>" class="post-title"><%= post.title %></a>
+        <% if (post.location && post.location.address) { %>
+          <div style="font-size:0.78rem; color:#6b3f1f; margin-bottom: 6px;">
+            📍 <%= post.location.address.length > 60 ? post.location.address.substring(0,60) + '…' : post.location.address %>
+          </div>
+        <% } %>
+        <div class="post-meta">
+          <span>By <%= post.userId?.username || 'Unknown' %></span>
+          <span><%= new Date(post.createdAt).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
+          <span><%= post.replies ? post.replies.length : 0 %> replies</span>
+          <% const likesArr = Array.isArray(post.likes) ? post.likes : []; %>
+          <% const hasLiked = likesArr.some(id => id.toString() === sessionUser._id.toString()); %>
+          <span>
+            ♥ <%= likesArr.length %>
+            <% if (!hasLiked) { %>
+              <form action="/forum/<%= post._id %>/like" method="POST" class="like-form">
+                <input type="hidden" name="redirectTo" value="/forum">
+                <button type="submit" class="like-btn">Like</button>
+              </form>
+            <% } else { %>
+              <span style="font-size:0.78rem; color:#6b3f1f; font-weight:600;">Liked</span>
+            <% } %>
+          </span>
+          <% const isOwner = post.userId?._id?.toString() === sessionUser._id.toString(); %>
+          <% if (isOwner || sessionUser.role === 'admin') { %>
+            <a href="/forum/<%= post._id %>/edit" style="font-size:0.78rem; color:#6b3f1f;">Edit</a>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+</body>
+</html>
