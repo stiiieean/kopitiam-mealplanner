@@ -1,7 +1,27 @@
 # App CRUD Features (Kopitiam Meal Planner)
 
-This document explains the **6 CRUD feature sets** in the project and how each one works end-to-end using the course concepts (Express routing, controllers, EJS view rendering, MongoDB via Mongoose, sessions/auth middleware).
+This document explains the **9 CRUD feature sets** in the project and how each one works end-to-end using the course concepts (Express routing, controllers, EJS view rendering, MongoDB via Mongoose, sessions/auth middleware).
 
+## Index (jump to what you need)
+
+- **How to read snippets**: [How to read the code snippets in this document](#index-how-to-read)
+- **Concepts ↔ lecture notes mapping**: [Concepts ↔ Notes topics mapping](#index-concepts-notes)
+- **Cross-feature glue (Express setup, middleware, MVC-ish)**: [Cross-feature “glue” snippets](#index-glue)
+- **Image uploads (Forum only)**: [Image uploads (end-to-end)](#index-uploads)
+- **CRUD feature sets**
+  - [CRUD Set 1 — Meal Planner](#crud-set-1)
+  - [CRUD Set 2 — Forum (Posts)](#crud-set-2)
+  - [CRUD Set 3 — Ratings Board (Stores)](#crud-set-3)
+  - [CRUD Set 4 — Reviews](#crud-set-4)
+  - [CRUD Set 5 — Food Hunt](#crud-set-5)
+  - [CRUD Set 6 — Challenges](#crud-set-6)
+  - [CRUD Set 7 — Authentication](#crud-set-7)
+  - [CRUD Set 8 — Profile](#crud-set-8)
+  - [CRUD Set 9 — Admin User Management](#crud-set-9)
+- **All-in-one recap**: [Quick mapping (all 9 CRUD sets)](#index-quick-mapping)
+- **Extra (beyond lecture notes)**: [Topics not taught (but used here)](#index-extra-topics)
+
+<a id="index-how-to-read"></a>
 ### How to read the code snippets in this document
 
 - **JavaScript (server or client)** runs as normal JS. Comments inside `js` blocks explain line-by-line where present.
@@ -11,6 +31,7 @@ This document explains the **6 CRUD feature sets** in the project and how each o
   - **`<%- ... %>`** — *(not used in snippets below)* unescaped output.
 - After most fenced code blocks, an **Explanation** subsection spells out what the snippet does in plain language so you can match it to routes, `req.body`, and MongoDB.
 
+<a id="index-concepts-notes"></a>
 ## Concepts ↔ Notes topics mapping (with note file links)
 
 Use this section to justify which “lecture concepts” appear in the codebase and where.
@@ -88,6 +109,7 @@ Notes: `c:\Users\komin\Desktop\SMU\Y1 Term 2 (2025)\IS113 - Web Application\Week
 
 ---
 
+<a id="index-glue"></a>
 ## Cross-feature “glue” snippets (how everything links)
 
 ### Express app setup: middleware + sessions + routers
@@ -95,24 +117,39 @@ Notes: `c:\Users\komin\Desktop\SMU\Y1 Term 2 (2025)\IS113 - Web Application\Week
 Snippet (from `server.js`):
 
 ```js
-server.set('view engine', 'ejs'); // Tell Express to render views using EJS templates in /views
-server.use(express.urlencoded({ extended: true })); // Parse HTML form POST bodies into req.body (supports nested objects when extended:true)
-server.use(express.static('public')); // Serve static files (CSS, client JS, uploaded images) from /public
+server.set('view engine', 'ejs'); // Enable res.render(...) with EJS templates in /views
 
-server.use(session({ // Add session support (server-side state across requests)
-  secret: process.env.SECRET, // Secret used to sign the session cookie (prevents tampering)
-  resave: false, // Don't save session back to store if nothing changed
-  saveUninitialized: false, // Don't create/store an empty session until something is stored in it (e.g., after login)
-  store: MongoStore.create({ mongoUrl: process.env.DB }), // Persist sessions in MongoDB so sessions survive server restarts
-  cookie: { maxAge: 1000 * 60 * 60 * 24 } // Session cookie expiry: 1 day (milliseconds)
+server.use(express.urlencoded({ extended: true })); // Parse HTML form bodies into req.body (nested objects supported)
+server.use(express.static('public')); // Serve /public assets (CSS, client JS, uploaded images)
+
+// Prevent browser from caching pages so back/forward never shows stale auth state
+server.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
+server.use(session({ // Add session support (login state across requests)
+  secret: process.env.SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: process.env.DB }), // Persist sessions in MongoDB (survives server restarts)
+  cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
 }));
 
-server.use('/meal-planner', mealPlannerRouter); // All routes in routes/mealPlanner.js start with /meal-planner
-server.use('/ratings', ratingsRouter); // All routes in routes/ratings.js start with /ratings
-server.use('/forum', forumRouter); // All routes in routes/forum.js start with /forum
+// Mount routers (URL prefixes)
+server.use('/', authRouter);            // /login, /register, /logout
+server.use('/home', homeRouter);        // /home
+server.use('/ratings', ratingsRouter);  // ratings + stores + “new review” routes
+server.use('/', reviewsRouter);         // /review/:reviewId/edit, /review/:reviewId/delete
+server.use('/meal-planner', mealPlannerRouter);
+server.use('/profile', profileRouter);
+server.use('/admin', adminRouter);
+server.use('/food-hunt', foodHuntRouter);
+server.use('/challenges', challengesRouter);
+server.use('/forum', forumRouter);
 ```
 
-**Explanation:** This is the Express app’s global setup. `ejs` is registered so `res.render('viewName')` works. `urlencoded` turns submitted form fields into `req.body` (needed for almost every POST). `static('public')` makes files under `public/` (CSS, uploaded images under `public/uploads/`) available at URLs like `/uploads/...`. `session` stores login state in MongoDB via `connect-mongo`. The last lines **mount** each router so URLs are prefixed (`/meal-planner`, `/ratings`, `/forum`).
+**Explanation:** This is the Express app’s global setup. `ejs` is registered so `res.render('viewName')` works. `urlencoded` turns submitted form fields into `req.body` (needed for almost every POST). `static('public')` makes files under `public/` (CSS, uploaded images under `public/uploads/`) available at URLs like `/uploads/...`. The `no-store` middleware prevents “back button shows logged-in pages” issues after logout. `session` stores login state in MongoDB via `connect-mongo`. The last lines **mount** each router so URLs are prefixed (e.g. `/meal-planner`, `/ratings`, `/forum`) while auth routes live at the site root (`/login`, `/register`, `/logout`).
 
 ### Auth middleware (authorization pattern)
 
@@ -161,6 +198,7 @@ exports.requireAdmin = (req, res, next) => {
 
 ---
 
+<a id="index-uploads"></a>
 ## Image uploads (end-to-end)
 
 **Where image upload exists:** Only the **Forum** feature uses file uploads. Everywhere else, CRUD uses plain form fields (text, numbers, checkboxes) and **no** `multipart/form-data`.
@@ -202,6 +240,7 @@ const storage = multer.diskStorage({
 
 ---
 
+<a id="crud-set-1"></a>
 ## CRUD Set 1 — Meal Planner (Calendar day plan)
 
 ### What is being stored
@@ -351,6 +390,7 @@ The list view builds each cell’s date key (`YYYY-MM-DD`) to match `User.calend
 
 ---
 
+<a id="crud-set-2"></a>
 ## CRUD Set 2 — Forum (Posts)
 
 ### What is being stored
@@ -627,6 +667,7 @@ Forum create/edit templates also load Leaflet and use `fetch` to Nominatim to fi
 
 ---
 
+<a id="crud-set-3"></a>
 ## CRUD Set 3 — Ratings Board (Stores)
 
 ### What is being stored
@@ -818,6 +859,7 @@ If the form re-renders after validation error, optional EJS can `fetch` Nominati
 
 ---
 
+<a id="crud-set-4"></a>
 ## CRUD Set 4 — Reviews (for a Store)
 
 ### What is being stored
@@ -938,6 +980,7 @@ Standard `POST` with **no** `multipart` (text-only fields). `storeName` is dupli
 
 ---
 
+<a id="crud-set-5"></a>
 ## CRUD Set 5 — Food Hunt (Saved recommendation runs)
 
 ### What is being stored
@@ -1067,6 +1110,7 @@ Each saved hunt shows tags (from a comma-separated `requirements` string), summa
 
 ---
 
+<a id="crud-set-6"></a>
 ## CRUD Set 6 — Challenges (Admin-managed challenge list)
 
 ### What is being stored
@@ -1172,7 +1216,542 @@ Snippet (from `views/challenges.ejs`) showing complete/undo POST forms:
 
 ---
 
-## Quick mapping (the 6 CRUD sets)
+<a id="crud-set-7"></a>
+## CRUD Set 7 — Authentication (Register / Login / Logout)
+
+### What is being stored
+
+- User accounts are stored in the `users` collection (`models/User.js`):
+  - `userid` (unique login ID), `username` (display name), `password` (bcrypt hash), `role` (`'user'` or `'admin'`), `calendar` (Map), `reviews[]`.
+
+Relevant files:
+- `routes/auth.js`
+- `controllers/authController.js`
+- `models/User.js`
+- Views: `views/register.ejs`, `views/login.ejs`
+
+### Notes concepts used
+
+- **Week 4**: Express Router + GET/POST routing + `res.redirect`
+- **Week 5**: EJS conditional error display (`<% if (failure) { %>`)
+- **Week 10**: Mongoose `User.create()` (CREATE), `User.findOne()` (READ)
+- **Week 11**: `bcrypt.hash` + `bcrypt.compare` for password security; `req.session.user` for login state; `req.session.destroy()` on logout
+
+### CRUD table
+
+| Operation | Route | Controller Function | What Happens |
+|---|---|---|---|
+| CREATE | `POST /register` | `postRegister` | Hash password, `User.addUser()` → `User.create()` |
+| READ | `POST /login` | `postLogin` | `User.findUser()`, `bcrypt.compare()`, set `req.session.user` |
+| READ | `GET /login` | `getLogin` | Check `req.session.user` — redirect to `/home` if already logged in |
+| DELETE | `GET /logout` | `logout` | `req.session.destroy()` — clears session from MongoDB + browser |
+
+> There is no Update here. Changing username/password is handled by the **Profile** CRUD set (Set 8).
+
+---
+
+### CREATE — Register a new account
+
+> **Class concept (Week 11):** `bcrypt.hash(password, 10)` one-way-hashes the plain-text password before saving it. The `10` is the salt rounds — higher is harder to crack but slower. The hash cannot be reversed, so even if the database is leaked, passwords are not exposed.
+
+> **Class concept (Week 10):** `User.addUser()` calls `User.create(newUser)` — Mongoose validates the schema (unique `userid`, required fields) before inserting the document.
+
+```js
+// controllers/authController.js — postRegister
+
+exports.postRegister = async (req, res) => {
+  const { userid, username, password, agree } = req.body; // Read all form fields from req.body
+
+  // Server-side validation — always validate even with client-side checks
+  if (!userid || !username || !password || !agree) {
+    return res.render('register', { failure: 'All fields are required.' });
+    // Re-render the form with an error message; nothing is saved to DB yet
+  }
+
+  try {
+    // Step 1: Check for duplicate userid before creating
+    const duplicate = await User.findUser(userid);
+    if (duplicate) {
+      return res.render('register', { failure: 'UserID already exists.' });
+    }
+
+    // Step 2: Hash the password — NEVER store plain text
+    const hashPassword = await bcrypt.hash(password, 10);
+    //    ↑ async: returns a Promise, must await before using the hash
+
+    // Step 3: Save the new user to MongoDB
+    await User.addUser({ userid, username, password: hashPassword });
+    //    ↑ User.addUser calls User.create() in models/User.js
+
+    res.redirect('/login'); // Success: send user to login page
+  } catch (error) {
+    console.error(error);
+    res.send('Error registering user');
+  }
+};
+```
+
+```js
+// models/User.js — addUser (what the controller calls)
+exports.addUser = function(newUser) {
+  return User.create(newUser);
+  // User.create validates the schema (unique userid, required fields),
+  // then inserts a new document into the 'users' collection
+};
+```
+
+---
+
+### READ — Log in (find user, verify password, start session)
+
+> **Class concept (Week 11):** `bcrypt.compare(plainText, hash)` re-hashes the typed password and compares it to the stored hash. It does **not** decrypt — bcrypt is one-way. Returns `true` if they match.
+
+> **Class concept (Week 11):** `req.session.user = { ... }` stores the logged-in user's data in the session (held in MongoDB via `connect-mongo`). Every page can then read `req.session.user` to know who is logged in.
+
+```js
+// controllers/authController.js — postLogin
+
+exports.postLogin = async (req, res) => {
+  const { userid, password } = req.body;
+
+  try {
+    // Step 1: Find the user document in the DB
+    const user = await User.findUser(userid);
+    //    ↑ User.findUser calls User.findOne({ userid }) in models/User.js
+    //      Returns null if no match
+
+    if (!user) {
+      return res.render('login', { failure: 'Invalid credentials' });
+      // "Invalid credentials" intentionally vague — don't reveal if userid exists
+    }
+
+    // Step 2: Compare typed password against the stored hash
+    const match = await bcrypt.compare(password, user.password);
+    //    ↑ returns true/false — this is the only secure way to check
+
+    if (match) {
+      // Step 3: Store user info in the session
+      req.session.user = {
+        _id:      user._id,       // MongoDB ObjectId — used in DB queries everywhere
+        userid:   user.userid,
+        username: user.username,  // shown in nav bar via EJS
+        role:     user.role       // 'user' or 'admin' — checked by requireAdmin middleware
+      };
+      // Note: password hash is NOT stored in the session
+      res.redirect('/home');
+    } else {
+      res.render('login', { failure: 'Invalid credentials' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.send('Error logging in');
+  }
+};
+```
+
+**Why only store selected fields in the session?**
+`req.session.user` is serialised into MongoDB. Storing only what you need (id, name, role) keeps sessions small and avoids leaking the password hash to session storage.
+
+---
+
+### DELETE — Log out (destroy session)
+
+> **Class concept (Week 11):** `req.session.destroy()` removes the session document from `connect-mongo` (the MongoDB sessions collection) and tells Express to clear the browser cookie. The user is now treated as anonymous.
+
+```js
+// controllers/authController.js — logout
+
+exports.logout = (req, res) => {
+  req.session.destroy(() => {
+    // callback fires after the session document is deleted from MongoDB
+    res.redirect('/login');
+  });
+  // No async/await here — req.session.destroy uses a callback, not a Promise
+};
+```
+
+### How EJS works for Auth
+
+- `views/register.ejs` and `views/login.ejs` both receive a `failure` variable from the controller.
+- When there is no error the controller passes `failure: null`; when there is an error it passes `failure: 'some message'`.
+- The view uses `<% if (failure) { %>` to conditionally show the error block.
+
+```ejs
+<% if (failure) { %>
+  <div class="alert alert-danger"><%= failure %></div>
+<% } %>
+```
+
+**Explanation:** `<% if (failure) { %>` is a server-side logic tag — nothing is printed, just a condition checked. `<%= failure %>` inside the block outputs the error string as HTML-escaped text. When `failure` is `null` the block is skipped entirely.
+
+---
+
+<a id="crud-set-8"></a>
+## CRUD Set 8 — Profile (User Self-Management)
+
+### What is being stored
+
+- The logged-in user's own `User` document — specifically the `username` field.
+- On account delete: the user document, all their `Review` documents, and the store `reviews[]` references are all cleaned up.
+
+Relevant files:
+- `routes/profile.js`
+- `controllers/profileController.js`
+- `models/User.js`, `models/Review.js`, `models/Store.js`
+- View: `views/profile.ejs`
+
+### Notes concepts used
+
+- **Week 4**: POST for update + POST for delete (HTML forms can't send DELETE)
+- **Week 10**: `findByIdAndUpdate`, `deleteMany`, `findByIdAndDelete`
+- **Week 11**: `requireLogin` middleware; session sync after update; `session.destroy()` after account deletion
+
+### CRUD table
+
+| Operation | Route | Controller Function | What Happens |
+|---|---|---|---|
+| READ | `GET /profile` | `getProfile` | `User.findById(req.session.user._id)` → render profile page |
+| UPDATE | `POST /profile` | `postProfile` | `User.findByIdAndUpdate()` then sync `req.session.user.username` |
+| DELETE | `POST /profile/delete` | `deleteAccount` | Cascade: unlink reviews from stores → `Review.deleteMany()` → `User.deleteById()` → `session.destroy()` |
+
+---
+
+### READ — Load profile page
+
+> **Class concept (Week 11):** `requireLogin` middleware runs before `getProfile` — if `req.session.user` does not exist the user is redirected to `/login` before the controller even runs.
+
+```js
+// controllers/profileController.js — getProfile
+
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.session.user._id);
+    //    ↑ re-fetches the full User document from DB using the id stored in the session
+    //      (session only stores a small subset of fields)
+    if (!user) return res.redirect('/login'); // safety: user deleted by admin mid-session
+    res.render('profile', { user, success: null, failure: null });
+  } catch (error) {
+    console.error(error);
+    res.send('Error loading profile');
+  }
+};
+```
+
+---
+
+### UPDATE — Change username (with session sync)
+
+> **Class concept (Week 10):** `User.findByIdAndUpdate(id, { username })` updates only the `username` field on the MongoDB document — all other fields (`password`, `role`, `calendar`, `reviews`) are untouched.
+
+> **Class concept (Week 11):** After the DB update, we also update `req.session.user.username`. Without this step the nav bar would still show the old name because the session is the source of truth for what's displayed on every page.
+
+```js
+// controllers/profileController.js — postProfile
+
+exports.postProfile = async (req, res) => {
+  const newUsername = req.body.username;
+
+  if (!newUsername || newUsername.trim() === '') {
+    const user = await User.findById(req.session.user._id);
+    return res.render('profile', { user, success: null, failure: 'Username cannot be empty.' });
+  }
+
+  try {
+    // Step 1: Update the MongoDB document
+    await User.findByIdAndUpdate(req.session.user._id, { username: newUsername.trim() });
+
+    // Step 2: Sync the session so the nav bar updates immediately
+    req.session.user.username = newUsername.trim();
+    //  ↑ modifying req.session.user changes the in-memory session object
+    //    connect-mongo auto-saves it; next request will see the new name
+
+    const user = await User.findById(req.session.user._id);
+    res.render('profile', { user, success: 'Profile updated successfully.', failure: null });
+  } catch (error) {
+    console.error(error);
+    res.send('Error updating profile');
+  }
+};
+```
+
+---
+
+### DELETE — Delete own account (triple cascading delete)
+
+> **Class concept (Week 10):** Three collections are affected in order. `Review.deleteMany()` bulk-deletes all the user's reviews. `User.deleteById()` deletes the account. Between those, each store must have its `reviews[]` array updated using `.pull()`.
+
+> **Class concept (Week 11):** `req.session.destroy()` is called last — after all DB operations — so that `userId` is still available in memory while cleaning up.
+
+```js
+// controllers/profileController.js — deleteAccount
+
+exports.deleteAccount = async (req, res) => {
+  const userId = req.session.user._id; // keep in local variable — session is destroyed at the end
+
+  try {
+    // Step 1: Find every review this user wrote (need storeId from each to clean up stores)
+    const userReviews = await Review.find({ userid: userId });
+
+    // Step 2: For each review, remove its ObjectId from the parent store's reviews[] array
+    for (const review of userReviews) {
+      await Store.retrieveById(review.storeId).then(store => {
+        if (store) {
+          store.reviews.pull(review._id); // unlink the review ObjectId from the store array
+          return store.save();            // persist the updated reviews array
+        }
+      });
+    }
+
+    // Step 3: Bulk delete all of this user's review documents
+    await Review.deleteMany({ userid: userId });
+
+    // Step 4: Delete the user document itself
+    await User.deleteById(userId);
+
+    // Step 5: Destroy the session — browser is now logged out
+    req.session.destroy(() => {
+      res.redirect('/login');
+    });
+  } catch (error) {
+    console.error(error);
+    res.send('Error deleting account');
+  }
+};
+```
+
+**Why must these steps happen in this exact order?**
+
+| Step | Why Order Matters |
+|---|---|
+| Step 1 before Step 3 | We need `review.storeId` from each review before they are deleted |
+| Step 2 before Step 3 | We need the review `_id` to pull it from the store before deleting the review |
+| Step 4 before Step 5 | `userId` is a local variable (safe), but logically we finish DB cleanup before ending the session |
+| Step 5 last | `session.destroy()` is the final cleanup — user is logged out after all data is gone |
+
+---
+
+<a id="crud-set-9"></a>
+## CRUD Set 9 — Admin User Management
+
+### What is being stored
+
+- Admin actions operate on other `User` documents in the `users` collection.
+- Admins can create accounts with any role, change roles, and delete non-admin users.
+
+Relevant files:
+- `routes/admin.js`
+- `controllers/adminController.js`
+- `models/User.js`
+- View: `views/admin.ejs`
+
+### Notes concepts used
+
+- **Week 4**: Express Router + `requireAdmin` middleware protecting all routes
+- **Week 5**: EJS loops to render user table; conditional messages for success/failure
+- **Week 10**: `User.findAll()`, `User.addUser()`, `User.findByIdAndUpdate()`, `User.deleteById()`
+- **Week 11**: `bcrypt.hash` for admin-created passwords; `requireAdmin` middleware; self-demotion guard using `req.session.user`
+
+### CRUD table
+
+| Operation | Route | Controller Function | Mongoose Method |
+|---|---|---|---|
+| CREATE | `POST /admin/users/create` | `createUser` | `User.addUser()` → `User.create()` with bcrypt hash |
+| READ | `GET /admin` | `getDashboard` | `User.findAll('userid username role')` |
+| UPDATE | `POST /admin/users/:userId/role` | `updateRole` | `User.findByIdAndUpdate(id, { role })` |
+| DELETE | `POST /admin/users/:userId/delete` | `deleteUser` | `User.deleteById(id)` |
+
+> All four routes are protected by `requireAdmin` (set at the router level in `routes/admin.js`).
+
+---
+
+### READ — Admin dashboard (list all users)
+
+> **Class concept (Week 10):** `User.findAll('userid username role')` is a **projection** — only those three fields are retrieved from MongoDB, not the password hash or calendar data. This keeps the response small and avoids accidentally sending sensitive fields to the view.
+
+```js
+// controllers/adminController.js — getDashboard
+
+exports.getDashboard = async (req, res) => {
+  try {
+    const users = await User.findAll('userid username role');
+    //    ↑ calls User.find({}, 'userid username role').sort({ role: 1, userid: 1 })
+    //      Sorted so admins appear before users, then alphabetically
+
+    res.render('admin', {
+      users,
+      success: null,       // shown when an action just succeeded
+      failure: null,       // shown when an action just failed
+      createFailure: null, // validation error for the create form
+      formData: emptyForm  // keeps the create form blank
+    });
+  } catch (error) {
+    console.error(error);
+    res.send('Error loading admin dashboard');
+  }
+};
+```
+
+```js
+// models/User.js — findAll
+exports.findAll = function(projection) {
+  return User.find({}, projection).sort({ role: 1, userid: 1 });
+  // projection = field selector string, e.g. 'userid username role'
+  // sort: 'admin' < 'user' alphabetically, then by userid
+};
+```
+
+---
+
+### CREATE — Admin creates a user account
+
+> **Class concept (Week 11):** Even when an admin creates an account and sets the password, `bcrypt.hash()` is used — the plain-text password is never stored.
+
+```js
+// controllers/adminController.js — createUser
+
+exports.createUser = async (req, res) => {
+  const { userid, username, password, role } = req.body;
+  const formData = { userid, username, role }; // retain form values if re-rendering with error
+
+  // Validate all fields present + password length + valid role value
+  if (!userid || !username || !password || !role) {
+    const users = await User.findAll('userid username role');
+    return res.render('admin', { users, createFailure: 'All fields are required.', formData, success: null, failure: null });
+  }
+
+  if (!['user', 'admin'].includes(role)) {
+    const users = await User.findAll('userid username role');
+    return res.render('admin', { users, createFailure: 'Invalid role selected.', formData, success: null, failure: null });
+  }
+
+  try {
+    // Check for duplicate userid
+    const duplicate = await User.findUser(userid);
+    if (duplicate) {
+      const users = await User.findAll('userid username role');
+      return res.render('admin', { users, createFailure: 'User ID already exists.', formData, success: null, failure: null });
+    }
+
+    // Hash password, then create user with the specified role
+    const hashPassword = await bcrypt.hash(password, 10);
+    await User.addUser({ userid, username, password: hashPassword, role });
+    //    ↑ role can be 'user' or 'admin' — admin can create either
+
+    const users = await User.findAll('userid username role');
+    res.render('admin', { users, success: `Account "${userid}" created.`, failure: null, createFailure: null, formData: emptyForm });
+  } catch (error) {
+    console.error(error);
+    res.send('Error creating user');
+  }
+};
+```
+
+---
+
+### UPDATE — Change a user's role (with self-demotion guard)
+
+> **Class concept (Week 11):** The server reads `req.session.user._id` to compare against the target `userId`. This prevents an admin from accidentally removing their own admin role — a guard that cannot be bypassed from the client side.
+
+```js
+// controllers/adminController.js — updateRole
+
+exports.updateRole = async (req, res) => {
+  const { userId } = req.params; // target user id from URL
+  const { role }   = req.body;   // new role from form select
+
+  // Guard: prevent self-demotion
+  if (userId === req.session.user._id.toString() && role !== 'admin') {
+    //  ↑ .toString() because req.params is a string but session._id may be an ObjectId
+    const users = await User.findAll('userid username role');
+    return res.render('admin', { users, failure: 'You cannot change your own role.', success: null, createFailure: null, formData: emptyForm });
+  }
+
+  try {
+    await User.findByIdAndUpdate(userId, { role });
+    //    ↑ only updates the 'role' field; all other user fields stay the same
+
+    const users = await User.findAll('userid username role');
+    res.render('admin', { users, success: 'Role updated successfully.', failure: null, createFailure: null, formData: emptyForm });
+  } catch (error) {
+    console.error(error);
+    res.send('Error updating role');
+  }
+};
+```
+
+---
+
+### DELETE — Remove a user (with admin protection)
+
+> **Class concept (Week 10):** `User.deleteById()` calls `User.findByIdAndDelete(id)`. The controller adds a business-logic guard: admin accounts cannot be deleted via this panel (prevents accidental lockout).
+
+```js
+// controllers/adminController.js — deleteUser
+
+exports.deleteUser = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const target = await User.findById(userId); // load target to inspect their role
+
+    if (!target) {
+      const users = await User.findAll('userid username role');
+      return res.render('admin', { users, failure: 'User not found.', success: null, createFailure: null, formData: emptyForm });
+    }
+
+    // Guard: prevent deletion of admin accounts
+    if (target.role === 'admin') {
+      const users = await User.findAll('userid username role');
+      return res.render('admin', { users, failure: 'Admin accounts cannot be deleted.', success: null, createFailure: null, formData: emptyForm });
+    }
+
+    await User.deleteById(userId); // DB DELETE: remove the user document
+
+    const users = await User.findAll('userid username role');
+    res.render('admin', { users, success: 'User deleted successfully.', failure: null, createFailure: null, formData: emptyForm });
+  } catch (error) {
+    console.error(error);
+    res.send('Error deleting user');
+  }
+};
+```
+
+### How EJS works for Admin
+
+- `views/admin.ejs` receives `users`, `success`, `failure`, `createFailure`, `formData`.
+- It renders a user table (loop over `users`) and an inline "Create User" form on the same page.
+- Each user row has a role `<select>` + save button (POST to `/:userId/role`) and a delete button (POST to `/:userId/delete`).
+- Success and failure banners use `<% if (success) { %>` / `<% if (failure) { %>` conditionals.
+
+```ejs
+<% users.forEach(function(u) { %>
+  <tr>
+    <td><%= u.userid %></td>
+    <td><%= u.username %></td>
+    <td>
+      <form action="/admin/users/<%= u._id %>/role" method="POST" style="display:inline;">
+        <select name="role">
+          <option value="user"  <%= u.role === 'user'  ? 'selected' : '' %>>User</option>
+          <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
+        </select>
+        <button type="submit">Save</button>
+      </form>
+    </td>
+    <td>
+      <form action="/admin/users/<%= u._id %>/delete" method="POST" style="display:inline;">
+        <button type="submit">Delete</button>
+      </form>
+    </td>
+  </tr>
+<% }) %>
+```
+
+**Explanation:** `forEach` renders one table row per user. `<%= u.userid %>` and `<%= u.username %>` print HTML-escaped values. The role `<select>` uses a ternary `<%= u.role === 'user' ? 'selected' : '' %>` to pre-select the current role. Both the role form and delete form embed `<%= u._id %>` in their `action` URLs. All forms POST so URL does not change (no querystring exposure).
+
+---
+
+<a id="index-quick-mapping"></a>
+## Quick mapping (all 9 CRUD sets)
 
 1. **Meal Planner (User.calendar)**: `routes/mealPlanner.js` + `views/meal-planner.ejs`, `views/plan-meal.ejs`
 2. **Forum Posts**: `routes/forum.js` + `controllers/forumController.js` + forum EJS templates
@@ -1180,9 +1759,13 @@ Snippet (from `views/challenges.ejs`) showing complete/undo POST forms:
 4. **Reviews**: `controllers/ReviewController.js` + `routes/ratings.js`/`routes/reviews.js` + review EJS templates
 5. **Food Hunts**: `routes/foodHunt.js` + food hunt EJS templates
 6. **Challenges**: `routes/challenges.js` + challenge EJS templates
+7. **Authentication**: `routes/auth.js` + `controllers/authController.js` + `views/register.ejs`, `views/login.ejs`
+8. **Profile (Self-Management)**: `routes/profile.js` + `controllers/profileController.js` + `views/profile.ejs`
+9. **Admin User Management**: `routes/admin.js` + `controllers/adminController.js` + `views/admin.ejs`
 
 ---
 
+<a id="index-extra-topics"></a>
 ## Topics not taught (but used here) — what they are + where to find them
 
 ### Multer file uploads (`multipart/form-data`)

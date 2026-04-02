@@ -1,0 +1,50 @@
+Kopitiam Meal Planner — Sample Seed Data (MongoDB)
+
+How to use (recommended):
+- Use MongoDB Compass → connect to your DB → select database → “Import Data” into each collection.
+- Import each section below into the collection with the given name.
+- Format is JSON Lines (one JSON document per line).
+
+Important:
+- These are sample accounts with a known password for testing.
+- Password below is already bcrypt-hashed (bcrypt 10 rounds). Plain password used to produce the hash: password123
+
+───────────────────────────────────────────────────────────────────────────────
+COLLECTION: users
+───────────────────────────────────────────────────────────────────────────────
+{"_id":{"$oid":"66a000000000000000000001"},"userid":"admin01","username":"Admin Tester","password":"$2b$10$.QGYbF2Cj1aYnxH49V7DFenDXG.iA1xMof/OGGghC7Ig33yMeXz..","role":"admin","calendar":{},"reviews":[{"$oid":"66a000000000000000000101"},{"$oid":"66a000000000000000000102"}]}
+{"_id":{"$oid":"66a000000000000000000002"},"userid":"user01","username":"Jamie Tan","password":"$2b$10$.QGYbF2Cj1aYnxH49V7DFenDXG.iA1xMof/OGGghC7Ig33yMeXz..","role":"user","calendar":{},"reviews":[{"$oid":"66a000000000000000000103"}]}
+{"_id":{"$oid":"66a000000000000000000003"},"userid":"user02","username":"Aqilah Noor","password":"$2b$10$.QGYbF2Cj1aYnxH49V7DFenDXG.iA1xMof/OGGghC7Ig33yMeXz..","role":"user","calendar":{},"reviews":[]}
+
+───────────────────────────────────────────────────────────────────────────────
+COLLECTION: stores
+───────────────────────────────────────────────────────────────────────────────
+{"_id":{"$oid":"66a000000000000000000201"},"name":"Maxwell Food Centre — Tian Tian","location":"Maxwell Food Centre, 1 Kadayanallur St, Singapore 069184","budget":6,"lat":1.2809,"lng":103.8446,"food":["Hainanese Chicken Rice","Roast Chicken","Soup"],"tags":["hawker","chicken rice","chinese","popular"],"reviews":[{"$oid":"66a000000000000000000101"},{"$oid":"66a000000000000000000103"}]}
+{"_id":{"$oid":"66a000000000000000000202"},"name":"Old Airport Road — Lao Fu Zi Fried Kway Teow","location":"Old Airport Road Food Centre, 51 Old Airport Rd, Singapore 390051","budget":5,"lat":1.3080,"lng":103.8852,"food":["Fried Kway Teow","Fried Carrot Cake"],"tags":["hawker","chinese","noodles"],"reviews":[{"$oid":"66a000000000000000000102"}]}
+{"_id":{"$oid":"66a000000000000000000203"},"name":"Tekka Centre — Prata Express","location":"Tekka Centre, 665 Buffalo Rd, Singapore 210665","budget":4,"lat":1.3066,"lng":103.8502,"food":["Plain Prata","Egg Prata","Teh Tarik"],"tags":["halal","indian","prata","budget"],"reviews":[]}
+
+───────────────────────────────────────────────────────────────────────────────
+COLLECTION: reviews
+───────────────────────────────────────────────────────────────────────────────
+{"_id":{"$oid":"66a000000000000000000101"},"userid":{"$oid":"66a000000000000000000001"},"storeId":{"$oid":"66a000000000000000000201"},"title":"Crispy skin, fragrant rice","body":"Queue was long but moved quickly. Chicken skin was slightly gelatinous and tasty, rice had strong aroma, chili was solid.","rating":5,"timestamp":{"$date":"2026-03-20T10:15:00.000Z"}}
+{"_id":{"$oid":"66a000000000000000000102"},"userid":{"$oid":"66a000000000000000000001"},"storeId":{"$oid":"66a000000000000000000202"},"title":"Wok hei is real","body":"Good smoky wok hei and generous cockles. A little oily but that is expected for char kway teow. Would return.","rating":4,"timestamp":{"$date":"2026-03-21T12:05:00.000Z"}}
+{"_id":{"$oid":"66a000000000000000000103"},"userid":{"$oid":"66a000000000000000000002"},"storeId":{"$oid":"66a000000000000000000201"},"title":"Worth the hype (mostly)","body":"Chicken is tender and portion is fair for the price. Rice is the highlight. Would be perfect if chili had more kick.","rating":4,"timestamp":{"$date":"2026-03-28T09:40:00.000Z"}}
+
+───────────────────────────────────────────────────────────────────────────────
+COLLECTION: forums
+───────────────────────────────────────────────────────────────────────────────
+{"_id":{"$oid":"66a000000000000000000301"},"title":"Best budget lunch near CBD?","content":"Any recommendations under $6 near Tanjong Pagar / Maxwell area? Prefer hawker food and not too spicy.","userId":{"$oid":"66a000000000000000000002"},"photo":null,"location":{"address":"Tanjong Pagar MRT, Singapore","lat":1.2764,"lng":103.8467},"createdAt":{"$date":"2026-03-30T03:20:00.000Z"},"likes":[{"$oid":"66a000000000000000000001"}],"replies":[{"userId":{"$oid":"66a000000000000000000001"},"content":"Maxwell is a safe bet. Tian Tian chicken rice is good but can exceed $6 if you add extras. Try the porridge stalls too.","photo":null,"createdAt":{"$date":"2026-03-30T04:05:00.000Z"}},{"userId":{"$oid":"66a000000000000000000003"},"content":"If you don't mind walking a bit, Amoy Street Food Centre has many options within $6 (noodles, thunder tea rice).","photo":null,"createdAt":{"$date":"2026-03-30T04:40:00.000Z"}}]}
+{"_id":{"$oid":"66a000000000000000000302"},"title":"Favourite prata combos?","content":"What do you order with prata besides curry? Looking for ideas (egg/cheese/onion etc).","userId":{"$oid":"66a000000000000000000003"},"photo":null,"location":{"address":"Tekka Centre, Singapore","lat":1.3066,"lng":103.8502},"createdAt":{"$date":"2026-03-29T15:10:00.000Z"},"likes":[{"$oid":"66a000000000000000000002"}],"replies":[{"userId":{"$oid":"66a000000000000000000002"},"content":"Egg + onion prata with fish curry is my default. Teh tarik must-have.","photo":null,"createdAt":{"$date":"2026-03-29T15:40:00.000Z"}}]}
+
+───────────────────────────────────────────────────────────────────────────────
+COLLECTION: foodhunts
+───────────────────────────────────────────────────────────────────────────────
+{"_id":{"$oid":"66a000000000000000000401"},"userId":{"$oid":"66a000000000000000000002"},"requirements":"hawker,chinese,noodles","totalBudget":12,"numMeals":2,"results":[{"stores":[{"storeId":{"$oid":"66a000000000000000000202"},"storeName":"Old Airport Road — Lao Fu Zi Fried Kway Teow","location":"Old Airport Road Food Centre, 51 Old Airport Rd, Singapore 390051","tags":["hawker","chinese","noodles"],"storeBudget":5,"matchScore":3},{"storeId":{"$oid":"66a000000000000000000201"},"storeName":"Maxwell Food Centre — Tian Tian","location":"Maxwell Food Centre, 1 Kadayanallur St, Singapore 069184","tags":["hawker","chicken rice","chinese","popular"],"storeBudget":6,"matchScore":2}],"totalCost":11,"totalMatchScore":5},{"stores":[{"storeId":{"$oid":"66a000000000000000000202"},"storeName":"Old Airport Road — Lao Fu Zi Fried Kway Teow","location":"Old Airport Road Food Centre, 51 Old Airport Rd, Singapore 390051","tags":["hawker","chinese","noodles"],"storeBudget":5,"matchScore":3},{"storeId":{"$oid":"66a000000000000000000202"},"storeName":"Old Airport Road — Lao Fu Zi Fried Kway Teow","location":"Old Airport Road Food Centre, 51 Old Airport Rd, Singapore 390051","tags":["hawker","chinese","noodles"],"storeBudget":5,"matchScore":3}],"totalCost":10,"totalMatchScore":6},{"stores":[{"storeId":{"$oid":"66a000000000000000000201"},"storeName":"Maxwell Food Centre — Tian Tian","location":"Maxwell Food Centre, 1 Kadayanallur St, Singapore 069184","tags":["hawker","chicken rice","chinese","popular"],"storeBudget":6,"matchScore":2},{"storeId":{"$oid":"66a000000000000000000201"},"storeName":"Maxwell Food Centre — Tian Tian","location":"Maxwell Food Centre, 1 Kadayanallur St, Singapore 069184","tags":["hawker","chicken rice","chinese","popular"],"storeBudget":6,"matchScore":2}],"totalCost":12,"totalMatchScore":4}],"createdAt":{"$date":"2026-03-31T06:30:00.000Z"}}
+{"_id":{"$oid":"66a000000000000000000402"},"userId":{"$oid":"66a000000000000000000003"},"requirements":"halal,prata,budget","totalBudget":10,"numMeals":2,"results":[{"stores":[{"storeId":{"$oid":"66a000000000000000000203"},"storeName":"Tekka Centre — Prata Express","location":"Tekka Centre, 665 Buffalo Rd, Singapore 210665","tags":["halal","indian","prata","budget"],"storeBudget":4,"matchScore":3},{"storeId":{"$oid":"66a000000000000000000203"},"storeName":"Tekka Centre — Prata Express","location":"Tekka Centre, 665 Buffalo Rd, Singapore 210665","tags":["halal","indian","prata","budget"],"storeBudget":4,"matchScore":3}],"totalCost":8,"totalMatchScore":6},{"stores":[{"storeId":{"$oid":"66a000000000000000000203"},"storeName":"Tekka Centre — Prata Express","location":"Tekka Centre, 665 Buffalo Rd, Singapore 210665","tags":["halal","indian","prata","budget"],"storeBudget":4,"matchScore":3},{"storeId":{"$oid":"66a000000000000000000201"},"storeName":"Maxwell Food Centre — Tian Tian","location":"Maxwell Food Centre, 1 Kadayanallur St, Singapore 069184","tags":["hawker","chicken rice","chinese","popular"],"storeBudget":6,"matchScore":1}],"totalCost":10,"totalMatchScore":4}],"createdAt":{"$date":"2026-03-27T11:10:00.000Z"}}
+
+───────────────────────────────────────────────────────────────────────────────
+COLLECTION: challenges
+───────────────────────────────────────────────────────────────────────────────
+{"_id":{"$oid":"66a000000000000000000501"},"title":"Try 3 new hawker stalls","description":"This week, visit 3 stalls you have never tried before and add at least 1 review for one of them.","completedBy":[{"userId":{"$oid":"66a000000000000000000002"},"completedAt":{"$date":"2026-03-25T09:00:00.000Z"}}],"createdAt":{"$date":"2026-03-20T02:00:00.000Z"}}
+{"_id":{"$oid":"66a000000000000000000502"},"title":"Stay under $5 challenge","description":"Plan a meal (or a food hunt) where each meal costs $5 or less. Bonus: share your budget picks in the forum.","completedBy":[],"createdAt":{"$date":"2026-03-22T02:00:00.000Z"}}
+
