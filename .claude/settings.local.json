@@ -31,7 +31,15 @@
       "Bash(node -e \"require\\(''docx''\\); console.log\\(''docx ok''\\)\")",
       "Bash(node -e \"require\\(''docx''\\); console.log\\(''ok''\\)\")",
       "Bash(node -e \"const m = require\\(require\\(''path''\\).join\\(require\\(''os''\\).homedir\\(\\), ''AppData/Roaming/npm/node_modules/docx''\\)\\); console.log\\(''ok global''\\)\")",
-      "Bash(node create_doc.js)"
+      "Bash(node create_doc.js)",
+      "Bash(python -c \":*)",
+      "Bash(npm list:*)",
+      "Bash(node create_presentation.js)",
+      "Bash(NODE_PATH=\"C:/Users/komin/AppData/Roaming/npm/node_modules\" node -e \"require\\(''pptxgenjs''\\); console.log\\(''OK''\\)\")",
+      "Bash(NODE_PATH=\"C:/Users/komin/AppData/Roaming/npm/node_modules\" node create_presentation.js)",
+      "Bash(where soffice:*)",
+      "Bash(where libreoffice:*)",
+      "Read(//c/Program Files/LibreOffice/program/**)"
     ]
   }
 }
